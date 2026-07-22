@@ -86,7 +86,11 @@
       <!-- Profile dropdown -->
       <div class="dropdown">
         <button class="btn btn-link p-0 d-flex align-items-center gap-2 text-dark text-decoration-none" data-bs-toggle="dropdown">
+          {% if user.photo %}
+          <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="user-avatar-sm user-avatar-image">
+          {% else %}
           <div class="user-avatar-sm">{{ user.initials }}</div>
+          {% endif %}
           <span class="d-none d-md-inline fw-medium small">{{ user.get_short_name }}</span>
           <i class="bi bi-chevron-down small text-secondary"></i>
         </button>

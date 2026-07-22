@@ -39,7 +39,11 @@
         <tr>
           <td class="ps-4">
             <div class="d-flex align-items-center gap-2">
+              {% if u.photo %}
+              <img src="{{ u.photo.url }}" alt="{{ u.get_full_name }}" class="user-avatar-sm user-avatar-image">
+              {% else %}
               <div class="user-avatar-sm">{{ u.initials }}</div>
+              {% endif %}
               <div>
                 <div class="fw-semibold">{{ u.get_full_name }}</div>
                 <div class="text-muted small">{{ u.phone|default:"—" }}</div>

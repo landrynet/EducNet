@@ -40,7 +40,11 @@
         <tr>
           <td class="ps-4">
             <div class="d-flex align-items-center gap-2">
+              {% if student.photo %}
+              <img src="{{ student.photo.url }}" alt="{{ student.get_full_name }}" class="user-avatar-sm user-avatar-image">
+              {% else %}
               <div class="user-avatar-sm">{{ student.initials }}</div>
+              {% endif %}
               <div>
                 <div class="fw-semibold">{{ student.get_full_name }}</div>
                 <div class="text-muted small">{{ student.age }} ans</div>

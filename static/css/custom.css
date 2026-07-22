@@ -260,6 +260,10 @@ body {
   flex-shrink: 0;
 }
 
+.user-avatar-image {
+  object-fit: cover;
+}
+
 .user-avatar-xl {
   width: 80px; height: 80px;
   background: linear-gradient(135deg, var(--primary), #818cf8);
