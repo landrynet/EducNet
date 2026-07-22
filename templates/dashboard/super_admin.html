@@ -108,7 +108,11 @@
               <tr>
                 <td class="ps-4">
                   <div class="d-flex align-items-center gap-2">
+                    {% if school.logo %}
+                    <img src="{{ school.logo.url }}" alt="{{ school.name }}" class="school-avatar school-avatar-image">
+                    {% else %}
                     <div class="school-avatar">{{ school.code|slice:":2" }}</div>
+                    {% endif %}
                     <div>
                       <div class="fw-medium">{{ school.name }}</div>
                       <div class="text-muted small">{{ school.city }}</div>

@@ -46,7 +46,16 @@
           <tbody>
             {% for u in users %}
             <tr>
-              <td class="ps-4 fw-medium">{{ u.get_full_name }}</td>
+              <td class="ps-4">
+                <div class="d-flex align-items-center gap-2">
+                  {% if u.photo %}
+                  <img src="{{ u.photo.url }}" alt="{{ u.get_full_name }}" class="user-avatar-sm user-avatar-image">
+                  {% else %}
+                  <div class="user-avatar-sm">{{ u.initials }}</div>
+                  {% endif %}
+                  <span class="fw-medium">{{ u.get_full_name }}</span>
+                </div>
+              </td>
               <td class="text-muted small">{{ u.email }}</td>
               <td><span class="badge bg-primary-subtle text-primary">{{ u.get_role_display }}</span></td>
               <td>
