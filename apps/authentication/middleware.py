@@ -13,6 +13,7 @@ class FirstLoginMiddleware:
         '/auth/login/',
         '/auth/logout/',
         '/auth/change-password/',
+        '/auth/setup/',
         '/static/',
         '/media/',
     ]
@@ -21,9 +22,16 @@ class FirstLoginMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        current = request.path
+        exempt = any(current.startswith(url) for url in self.EXEMPT_URLS)
         if request.user.is_authenticated and request.user.must_change_password:
-            current = request.path
-            exempt = any(current.startswith(url) for url in self.EXEMPT_URLS)
             if not exempt:
                 return redirect(reverse('authentication:change_password'))
+        if (
+            request.user.is_authenticated
+            and request.user.role == 'admin_ecole'
+            and not request.user.profile_completed
+            and not exempt
+        ):
+            return redirect(reverse('authentication:setup'))
         return self.get_response(request)

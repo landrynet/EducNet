@@ -27,47 +27,40 @@
         <span class="badge bg-light text-dark border">{{ school.code }}</span>
         <hr />
         <div class="text-start small">
-          <div class="mb-2"><i class="bi bi-geo-alt me-2 text-muted"></i>{{ school.city }}, {{ school.country }}</div>
-          {% if school.phone %}<div class="mb-2"><i class="bi bi-telephone me-2 text-muted"></i>{{ school.phone }}</div>{% endif %}
-          {% if school.email %}<div class="mb-2"><i class="bi bi-envelope me-2 text-muted"></i>{{ school.email }}</div>{% endif %}
-          {% if school.director_name %}<div class="mb-2"><i class="bi bi-person me-2 text-muted"></i>{{ school.director_name }}</div>{% endif %}
+          <h6 class="fw-semibold mt-3">Informations générales</h6>
+          <dl class="row mb-3">
+            <dt class="col-5">Type</dt><dd class="col-7">{{ school.get_school_type_display }}</dd>
+            <dt class="col-5">Adresse</dt><dd class="col-7">{{ school.address }}</dd>
+            <dt class="col-5">Ville</dt><dd class="col-7">{{ school.city }}</dd>
+            <dt class="col-5">Pays</dt><dd class="col-7">{{ school.country }}</dd>
+            <dt class="col-5">Créée le</dt><dd class="col-7">{{ school.created_at|date:"d/m/Y" }}</dd>
+          </dl>
+          <h6 class="fw-semibold">Informations de contact</h6>
+          <dl class="row mb-0">
+            <dt class="col-5">Téléphone</dt><dd class="col-7">{{ school.phone|default:"—" }}</dd>
+            <dt class="col-5">E-mail</dt><dd class="col-7">{{ school.email|default:"—" }}</dd>
+            <dt class="col-5">Site web</dt><dd class="col-7">{{ school.website|default:"—" }}</dd>
+            <dt class="col-5">Contact initial</dt><dd class="col-7">{{ school.director_name|default:"—" }}</dd>
+          </dl>
         </div>
       </div>
     </div>
   </div>
   <div class="col-lg-8">
     <div class="card border-0 shadow-sm">
-      <div class="card-header bg-transparent border-0">
-        <h6 class="fw-semibold mb-0"><i class="bi bi-people me-2 text-primary"></i>Utilisateurs ({{ users.count }})</h6>
-      </div>
-      <div class="table-responsive">
-        <table class="table table-hover mb-0">
-          <thead class="table-light"><tr><th class="ps-4">Nom</th><th>Email</th><th>Rôle</th><th>Statut</th></tr></thead>
-          <tbody>
-            {% for u in users %}
-            <tr>
-              <td class="ps-4">
-                <div class="d-flex align-items-center gap-2">
-                  {% if u.photo %}
-                  <img src="{{ u.photo.url }}" alt="{{ u.get_full_name }}" class="user-avatar-sm user-avatar-image">
-                  {% else %}
-                  <div class="user-avatar-sm">{{ u.initials }}</div>
-                  {% endif %}
-                  <span class="fw-medium">{{ u.get_full_name }}</span>
-                </div>
-              </td>
-              <td class="text-muted small">{{ u.email }}</td>
-              <td><span class="badge bg-primary-subtle text-primary">{{ u.get_role_display }}</span></td>
-              <td>
-                {% if u.is_active %}<span class="badge bg-success-subtle text-success">Actif</span>
-                {% else %}<span class="badge bg-secondary-subtle text-secondary">Inactif</span>{% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="4" class="text-center py-3 text-muted">Aucun utilisateur</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="card-header bg-transparent border-0"><h6 class="fw-semibold mb-0"><i class="bi bi-person-badge me-2 text-primary"></i>Responsable principal</h6></div>
+      <div class="card-body">
+        {% if responsible %}
+        <div class="d-flex align-items-center gap-3 mb-3">
+          {% if responsible.photo %}<img src="{{ responsible.photo.url }}" alt="{{ responsible.get_full_name }}" class="user-avatar-sm user-avatar-image">
+          {% else %}<div class="user-avatar-sm">{{ responsible.initials }}</div>{% endif %}
+          <div><div class="fw-semibold">{{ responsible.get_full_name }}</div><div class="text-muted small">Administrateur d'école</div></div>
+        </div>
+        <dl class="row small mb-0">
+          <dt class="col-4">Téléphone</dt><dd class="col-8">{{ responsible.phone|default:"—" }}</dd>
+          <dt class="col-4">E-mail</dt><dd class="col-8">{{ responsible.email }}</dd>
+        </dl>
+        {% else %}<p class="text-muted mb-0">Aucun responsable principal enregistré.</p>{% endif %}
       </div>
     </div>
   </div>

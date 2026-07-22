@@ -38,3 +38,35 @@ class SchoolForm(forms.ModelForm):
             ),
             Submit('submit', 'Enregistrer', css_class='btn btn-primary mt-3'),
         )
+
+
+class SchoolCreationForm(forms.ModelForm):
+    """Initial school information entered by the Super Admin."""
+
+    class Meta:
+        model = School
+        fields = [
+            'name', 'code', 'school_type', 'address', 'city', 'country',
+            'phone', 'email', 'website', 'logo', 'registration_number',
+            'founded_year',
+        ]
+        widgets = {'address': forms.Textarea(attrs={'rows': 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset('Informations initiales',
+                Row(Column('name', css_class='col-md-8'), Column('code', css_class='col-md-4')),
+                Row(Column('school_type'), Column('founded_year')),
+                'registration_number',
+            ),
+            Fieldset('Coordonnées',
+                'address',
+                Row(Column('city'), Column('country')),
+                Row(Column('phone'), Column('email')),
+                'website',
+            ),
+            Fieldset('Logo', 'logo'),
+            Submit('submit', 'Créer l’école', css_class='btn btn-primary mt-3'),
+        )
