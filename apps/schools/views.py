@@ -15,7 +15,7 @@ from apps.audit.utils import log_action
 @role_required(['super_admin'])
 def school_list(request):
     schools = School.objects.annotate(
-        user_count=Count('users', distinct=True),
+        total_users=Count('users', distinct=True),
     )
     search = request.GET.get('q', '')
     if search:
