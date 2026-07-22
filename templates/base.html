@@ -19,6 +19,7 @@
 
 {% if user.is_authenticated %}
 <!-- ─── SIDEBAR ──────────────────────────────────────────── -->
+{% if request.path != "/auth/change-password/" and request.path != "/auth/setup/" %}
 <div id="sidebar" class="sidebar d-flex flex-column">
   <!-- Brand -->
   <div class="sidebar-brand">
@@ -61,13 +62,14 @@
     </a>
   </div>
 </div>
+{% endif %}
 
 <!-- ─── MAIN CONTENT ─────────────────────────────────────── -->
-<div id="main-content" class="main-content">
+<div id="main-content" class="main-content{% if request.path == '/auth/change-password/' or request.path == '/auth/setup/' %} onboarding-main-content{% endif %}">
 
   <!-- Top Navbar -->
   <nav class="top-navbar">
-    <button class="btn btn-link sidebar-toggle p-0 me-3" id="sidebarToggle">
+    <button class="btn btn-link sidebar-toggle p-0 me-3{% if request.path == '/auth/change-password/' or request.path == '/auth/setup/' %} d-none{% endif %}" id="sidebarToggle">
       <i class="bi bi-list fs-4 text-secondary"></i>
     </button>
 
