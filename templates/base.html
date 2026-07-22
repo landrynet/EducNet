@@ -38,8 +38,9 @@
   <!-- Navigation -->
   <nav class="sidebar-nav flex-grow-1 overflow-auto">
     {% for item in sidebar_menu %}
-    <a href="{% url item.url %}"
-       class="sidebar-link {% if request.path == item.url %}active{% endif %}">
+    {% url item.url as item_url %}
+    <a href="{{ item_url }}"
+       class="sidebar-link {% if request.path == item_url %}active{% endif %}">
       <i class="bi {{ item.icon }} sidebar-icon"></i>
       <span>{{ item.label }}</span>
     </a>

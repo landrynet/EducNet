@@ -1,22 +1,96 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row g-4 mb-4">
-  <div class="col-12">
-    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-3">
-      <i class="bi bi-info-circle-fill fs-4"></i>
-      <div>Bienvenue dans votre espace enseignant. Consultez votre emploi du temps et gérez vos évaluations.</div>
+<!-- Welcome header -->
+<div class="welcome-header mb-4 p-4 rounded-3 position-relative overflow-hidden"
+     style="background:linear-gradient(135deg,#0369a1 0%,#0284c7 60%,#38bdf8 100%);color:#fff;">
+  <div class="position-relative" style="z-index:1;">
+    <h5 class="fw-bold mb-1">Bonjour, {{ request.user.first_name }} 👋</h5>
+    <p class="mb-0 opacity-75 small">Espace enseignant{% if school %} — {{ school.name }}{% endif %}</p>
+  </div>
+  <div class="position-absolute" style="right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,.07);border-radius:50%;z-index:0;"></div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
+    <div class="stat-card stat-card-primary">
+      <div class="stat-card-icon"><i class="bi bi-book"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Mes matières</div>
+        <div class="stat-card-value">{{ stats.my_subjects }}</div>
+        <div class="stat-card-sub">matières assignées</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card stat-card-info">
+      <div class="stat-card-icon"><i class="bi bi-calendar-week"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Emploi du temps</div>
+        <div class="stat-card-value">{{ stats.timetable_entries }}</div>
+        <div class="stat-card-sub">séances planifiées</div>
+      </div>
     </div>
   </div>
 </div>
+
+<!-- Quick access -->
 <div class="row g-4">
-  {% for item in sidebar_menu %}{% if not forloop.first %}
-  <div class="col-6 col-md-3">
-    <a href="{% url item.url %}" class="module-tile module-tile-lg">
-      <i class="bi {{ item.icon }} module-tile-icon"></i>
-      <span class="module-tile-label">{{ item.label }}</span>
-    </a>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 pb-0">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-lightning-charge me-2 text-primary"></i>Actions rapides</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'assessments:create' %}" class="btn btn-outline-primary text-start">
+            <i class="bi bi-pencil-square me-2"></i>Saisir des notes
+          </a>
+          <a href="{% url 'timetable:index' %}" class="btn btn-outline-info text-start">
+            <i class="bi bi-calendar-week me-2"></i>Mon emploi du temps
+          </a>
+          <a href="{% url 'communication:index' %}" class="btn btn-outline-success text-start">
+            <i class="bi bi-chat-dots me-2"></i>Messages
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
-  {% endif %}{% endfor %}
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 pb-0">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-grid me-2 text-primary"></i>Mes modules</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-4">
+            <a href="{% url 'timetable:index' %}" class="module-tile">
+              <i class="bi bi-calendar-week module-tile-icon text-primary"></i>
+              <span class="module-tile-label">Emploi du temps</span>
+            </a>
+          </div>
+          <div class="col-4">
+            <a href="{% url 'assessments:index' %}" class="module-tile">
+              <i class="bi bi-pencil-square module-tile-icon text-danger"></i>
+              <span class="module-tile-label">Évaluations</span>
+            </a>
+          </div>
+          <div class="col-4">
+            <a href="{% url 'reports:index' %}" class="module-tile">
+              <i class="bi bi-file-text module-tile-icon text-secondary"></i>
+              <span class="module-tile-label">Bulletins</span>
+            </a>
+          </div>
+          <div class="col-4">
+            <a href="{% url 'communication:index' %}" class="module-tile">
+              <i class="bi bi-chat-dots module-tile-icon text-success"></i>
+              <span class="module-tile-label">Communication</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

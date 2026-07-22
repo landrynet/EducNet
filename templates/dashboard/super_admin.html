@@ -1,42 +1,50 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Welcome header -->
+<div class="welcome-header mb-4 p-4 rounded-3 position-relative overflow-hidden"
+     style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#1e40af 100%);color:#fff;">
+  <div class="position-relative" style="z-index:1;">
+    <h5 class="fw-bold mb-1">Bonjour, {{ request.user.first_name }} 👋</h5>
+    <p class="mb-0 opacity-75 small">Vue globale de la plateforme — Super Administration</p>
+  </div>
+  <div class="position-absolute" style="right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:50%;z-index:0;"></div>
+  <div class="position-absolute" style="right:60px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%;z-index:0;"></div>
+</div>
+
 <!-- Stats row -->
-<div class="row g-4 mb-4">
-  <div class="col-sm-6 col-xl-3">
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
     <div class="stat-card stat-card-primary">
       <div class="stat-card-icon"><i class="bi bi-building"></i></div>
       <div class="stat-card-body">
-        <div class="stat-card-label">Total Écoles</div>
+        <div class="stat-card-label">Écoles</div>
         <div class="stat-card-value">{{ stats.total_schools }}</div>
-        <div class="stat-card-sub">{{ stats.active_schools }} actives</div>
+        <div class="stat-card-sub">{{ stats.active_schools }} actives · {{ stats.inactive_schools }} inactives</div>
       </div>
     </div>
   </div>
-  <div class="col-sm-6 col-xl-3">
+  <div class="col-6 col-xl-3">
     <div class="stat-card stat-card-success">
       <div class="stat-card-icon"><i class="bi bi-people"></i></div>
       <div class="stat-card-body">
-        <div class="stat-card-label">Total Utilisateurs</div>
+        <div class="stat-card-label">Utilisateurs</div>
         <div class="stat-card-value">{{ stats.total_users }}</div>
         <div class="stat-card-sub">{{ stats.active_users }} actifs</div>
       </div>
     </div>
   </div>
-  <div class="col-sm-6 col-xl-3">
+  <div class="col-6 col-xl-3">
     <div class="stat-card stat-card-info">
-      <div class="stat-card-icon"><i class="bi bi-activity"></i></div>
+      <div class="stat-card-icon"><i class="bi bi-person-badge"></i></div>
       <div class="stat-card-body">
-        <div class="stat-card-label">Taux d'activité</div>
-        <div class="stat-card-value">
-          {% if stats.total_schools %}{{ stats.active_schools|default:0 }}{% else %}0{% endif %}
-          <small class="fs-6 fw-normal">/{{ stats.total_schools }}</small>
-        </div>
-        <div class="stat-card-sub">Établissements actifs</div>
+        <div class="stat-card-label">Administrateurs</div>
+        <div class="stat-card-value">{{ stats.role_breakdown.admin_ecole|default:"0" }}</div>
+        <div class="stat-card-sub">admins d'école</div>
       </div>
     </div>
   </div>
-  <div class="col-sm-6 col-xl-3">
+  <div class="col-6 col-xl-3">
     <div class="stat-card stat-card-warning">
       <div class="stat-card-icon"><i class="bi bi-shield-check"></i></div>
       <div class="stat-card-body">
@@ -48,7 +56,7 @@
   </div>
 </div>
 
-<!-- Quick Actions + Recent Schools -->
+<!-- Quick Actions + Recent -->
 <div class="row g-4">
   <div class="col-lg-4">
     <div class="card border-0 shadow-sm h-100">
@@ -66,8 +74,11 @@
           <a href="{% url 'audit:list' %}" class="btn btn-outline-secondary text-start">
             <i class="bi bi-shield-check me-2"></i>Journal d'audit
           </a>
-          <a href="{% url 'backup:create' %}" class="btn btn-outline-warning text-start" onclick="return confirm('Créer une sauvegarde ?')">
-            <i class="bi bi-database-add me-2"></i>Sauvegarder la base
+          <a href="{% url 'analytics:index' %}" class="btn btn-outline-info text-start">
+            <i class="bi bi-bar-chart me-2"></i>Statistiques globales
+          </a>
+          <a href="{% url 'backup:index' %}" class="btn btn-outline-warning text-start">
+            <i class="bi bi-database me-2"></i>Sauvegardes
           </a>
         </div>
       </div>
@@ -75,7 +86,7 @@
   </div>
 
   <div class="col-lg-8">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-0">
         <h6 class="fw-semibold mb-0"><i class="bi bi-building me-2 text-primary"></i>Écoles récentes</h6>
         <a href="{% url 'schools:list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
@@ -88,7 +99,6 @@
               <tr>
                 <th class="ps-4">Établissement</th>
                 <th>Code</th>
-                <th>Ville</th>
                 <th>Statut</th>
                 <th></th>
               </tr>
@@ -96,14 +106,21 @@
             <tbody>
               {% for school in recent_schools %}
               <tr>
-                <td class="ps-4 fw-medium">{{ school.name }}</td>
-                <td><span class="badge bg-light text-dark border">{{ school.code }}</span></td>
-                <td class="text-muted">{{ school.city }}</td>
+                <td class="ps-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="school-avatar">{{ school.code|slice:":2" }}</div>
+                    <div>
+                      <div class="fw-medium">{{ school.name }}</div>
+                      <div class="text-muted small">{{ school.city }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="badge bg-light text-dark border font-monospace">{{ school.code }}</span></td>
                 <td>
                   {% if school.is_active %}
-                  <span class="badge bg-success-subtle text-success">Active</span>
+                  <span class="badge bg-success-subtle text-success rounded-pill">Active</span>
                   {% else %}
-                  <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                  <span class="badge bg-secondary-subtle text-secondary rounded-pill">Inactive</span>
                   {% endif %}
                 </td>
                 <td>
@@ -124,6 +141,53 @@
             <i class="bi bi-plus me-1"></i>Créer la première école
           </a>
         </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent users -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-0">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-people me-2 text-primary"></i>Utilisateurs récents</h6>
+        <a href="{% url 'users:list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_users %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Utilisateur</th>
+                <th>Rôle</th>
+                <th>École</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in recent_users %}
+              <tr>
+                <td class="ps-4">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="user-avatar-sm">{{ u.initials }}</div>
+                    <div class="fw-medium">{{ u.get_full_name }}</div>
+                  </div>
+                </td>
+                <td><span class="badge bg-primary-subtle text-primary">{{ u.get_role_display }}</span></td>
+                <td class="text-muted small">{{ u.school.name|default:"—" }}</td>
+                <td>
+                  {% if u.is_active %}
+                  <span class="badge bg-success-subtle text-success rounded-pill">Actif</span>
+                  {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary rounded-pill">Inactif</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-muted small">Aucun utilisateur</div>
         {% endif %}
       </div>
     </div>

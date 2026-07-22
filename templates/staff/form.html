@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'staff:list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="mb-0 fw-bold">{{ title }}</h4>
+    <p class="text-muted small mb-0">{% if profile %}Modification du profil{% else %}Nouveau membre du personnel{% endif %}</p>
+  </div>
+</div>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="row g-4">
+
+    <!-- Informations du compte -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-bottom">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-person me-2 text-primary"></i>Informations du compte</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label">Prénom *</label>
+              {{ user_form.first_name }}
+              {% if user_form.first_name.errors %}
+                <div class="text-danger small mt-1">{{ user_form.first_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Nom *</label>
+              {{ user_form.last_name }}
+              {% if user_form.last_name.errors %}
+                <div class="text-danger small mt-1">{{ user_form.last_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Adresse email *</label>
+              {{ user_form.email }}
+              {% if user_form.email.errors %}
+                <div class="text-danger small mt-1">{{ user_form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Téléphone</label>
+              {{ user_form.phone }}
+              {% if user_form.phone.errors %}
+                <div class="text-danger small mt-1">{{ user_form.phone.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Rôle *</label>
+              {{ user_form.role }}
+              {% if user_form.role.errors %}
+                <div class="text-danger small mt-1">{{ user_form.role.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">
+                Mot de passe {% if not profile %}*{% else %}<span class="text-muted">(laisser vide pour ne pas changer)</span>{% endif %}
+              </label>
+              {{ user_form.password }}
+              {% if user_form.password.errors %}
+                <div class="text-danger small mt-1">{{ user_form.password.errors.0 }}</div>
+              {% endif %}
+              {% if not profile %}
+              <div class="form-text">Le membre devra changer ce mot de passe à sa première connexion.</div>
+              {% endif %}
+            </div>
+          </div>
+          {% if user_form.non_field_errors %}
+          <div class="alert alert-danger mt-3">{{ user_form.non_field_errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Profil professionnel -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-bottom">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-briefcase me-2 text-primary"></i>Profil professionnel</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label">Type de personnel</label>
+              {{ profile_form.staff_type }}
+              {% if profile_form.staff_type.errors %}
+                <div class="text-danger small mt-1">{{ profile_form.staff_type.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Type de contrat</label>
+              {{ profile_form.contract_type }}
+              {% if profile_form.contract_type.errors %}
+                <div class="text-danger small mt-1">{{ profile_form.contract_type.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Matricule employé</label>
+              {{ profile_form.employee_id }}
+              {% if profile_form.employee_id.errors %}
+                <div class="text-danger small mt-1">{{ profile_form.employee_id.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Date d'embauche</label>
+              {{ profile_form.hire_date }}
+              {% if profile_form.hire_date.errors %}
+                <div class="text-danger small mt-1">{{ profile_form.hire_date.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Spécialisation</label>
+              {{ profile_form.specialization }}
+              {% if profile_form.specialization.errors %}
+                <div class="text-danger small mt-1">{{ profile_form.specialization.errors.0 }}</div>
+              {% endif %}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Biographie</label>
+              {{ profile_form.bio }}
+              {% if profile_form.bio.errors %}
+                <div class="text-danger small mt-1">{{ profile_form.bio.errors.0 }}</div>
+              {% endif %}
+            </div>
+            {% if profile %}
+            <div class="col-12">
+              <div class="form-check">
+                {{ profile_form.is_active }}
+                <label class="form-check-label">Compte actif</label>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Actions -->
+  <div class="d-flex gap-2 mt-4">
+    <button type="submit" class="btn btn-primary px-4">
+      <i class="bi bi-check-lg me-1"></i>{{ action }}
+    </button>
+    <a href="{% if profile %}{% url 'staff:detail' profile.pk %}{% else %}{% url 'staff:list' %}{% endif %}"
+       class="btn btn-outline-secondary px-4">Annuler</a>
+  </div>
+</form>
+{% endblock %}

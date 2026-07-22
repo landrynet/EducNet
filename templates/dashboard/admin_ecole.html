@@ -1,120 +1,179 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% if school %}
-<div class="school-banner mb-4">
-  <div class="d-flex align-items-center gap-3">
-    {% if school.logo %}
-    <img src="{{ school.logo.url }}" alt="{{ school.name }}" class="rounded-3" style="width:56px;height:56px;object-fit:cover;">
-    {% else %}
-    <div class="school-avatar-lg">{{ school.name|slice:":2"|upper }}</div>
-    {% endif %}
-    <div>
-      <h4 class="mb-0 fw-bold">{{ school.name }}</h4>
-      <span class="text-muted small">{{ school.city }} &bull; {{ school.get_school_type_display }}</span>
-      {% if stats.active_year %}
-      <span class="badge bg-primary ms-2">{{ stats.active_year.name }}</span>
-      {% endif %}
-    </div>
+<!-- Welcome header -->
+<div class="welcome-header mb-4 p-4 rounded-3 position-relative overflow-hidden"
+     style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#1e40af 100%);color:#fff;">
+  <div class="position-relative" style="z-index:1;">
+    <h5 class="fw-bold mb-1">Bonjour, {{ request.user.first_name }} 👋</h5>
+    <p class="mb-0 opacity-75 small">
+      {% if stats.active_year %}Année scolaire : <strong>{{ stats.active_year }}</strong>{% else %}Bienvenue dans votre espace d'administration{% endif %}
+      {% if school %} — {{ school.name }}{% endif %}
+    </p>
   </div>
+  <div class="position-absolute" style="right:-20px;top:-20px;width:120px;height:120px;background:rgba(255,255,255,.05);border-radius:50%;z-index:0;"></div>
+  <div class="position-absolute" style="right:60px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%;z-index:0;"></div>
 </div>
-{% endif %}
 
-<!-- Stats -->
-<div class="row g-4 mb-4">
-  <div class="col-sm-6 col-xl-3">
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3">
     <div class="stat-card stat-card-primary">
       <div class="stat-card-icon"><i class="bi bi-person-vcard"></i></div>
       <div class="stat-card-body">
         <div class="stat-card-label">Élèves</div>
         <div class="stat-card-value">{{ stats.total_students }}</div>
-        <div class="stat-card-sub">inscrits et actifs</div>
+        <div class="stat-card-sub">{{ stats.active_students }} actifs</div>
       </div>
     </div>
   </div>
-  <div class="col-sm-6 col-xl-3">
+  <div class="col-6 col-xl-3">
     <div class="stat-card stat-card-success">
+      <div class="stat-card-icon"><i class="bi bi-person-badge"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Personnel</div>
+        <div class="stat-card-value">{{ stats.total_staff }}</div>
+        <div class="stat-card-sub">{{ stats.active_staff }} actifs</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card stat-card-info">
       <div class="stat-card-icon"><i class="bi bi-people"></i></div>
       <div class="stat-card-body">
         <div class="stat-card-label">Utilisateurs</div>
         <div class="stat-card-value">{{ stats.total_users }}</div>
-        <div class="stat-card-sub">de l'établissement</div>
+        <div class="stat-card-sub">{{ stats.active_users }} actifs</div>
       </div>
     </div>
   </div>
-  <div class="col-sm-6 col-xl-3">
-    <div class="stat-card stat-card-info">
-      <div class="stat-card-icon"><i class="bi bi-calendar3"></i></div>
+  <div class="col-6 col-xl-3">
+    <div class="stat-card stat-card-warning">
+      <div class="stat-card-icon"><i class="bi bi-book"></i></div>
       <div class="stat-card-body">
-        <div class="stat-card-label">Année scolaire</div>
-        <div class="stat-card-value">
-          {% if stats.active_year %}
-          <span class="fs-6 fw-semibold">{{ stats.active_year.name }}</span>
+        <div class="stat-card-label">Matières</div>
+        <div class="stat-card-value">{{ stats.total_subjects }}</div>
+        <div class="stat-card-sub">
+          {% if stats.pending_enrollments > 0 %}
+            <span class="text-warning">{{ stats.pending_enrollments }} inscr. en attente</span>
           {% else %}
-          <span class="fs-6 text-muted">Non définie</span>
+            Aucune inscription en attente
           {% endif %}
         </div>
       </div>
     </div>
   </div>
-  <div class="col-sm-6 col-xl-3">
-    <div class="stat-card stat-card-warning">
-      <div class="stat-card-icon"><i class="bi bi-check-circle"></i></div>
-      <div class="stat-card-body">
-        <div class="stat-card-label">Système</div>
-        <div class="stat-card-value text-success"><i class="bi bi-check-circle-fill fs-4"></i></div>
-        <div class="stat-card-sub">Opérationnel</div>
-      </div>
-    </div>
-  </div>
 </div>
 
-<!-- Quick Actions -->
+<!-- Quick Links + Actions -->
 <div class="row g-4">
   <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm h-100">
       <div class="card-header bg-transparent border-0 pb-0">
         <h6 class="fw-semibold mb-0"><i class="bi bi-lightning-charge me-2 text-primary"></i>Actions rapides</h6>
       </div>
       <div class="card-body">
         <div class="d-grid gap-2">
           <a href="{% url 'students:create' %}" class="btn btn-outline-primary text-start">
-            <i class="bi bi-person-plus me-2"></i>Nouveau élève
+            <i class="bi bi-person-plus me-2"></i>Inscrire un élève
           </a>
-          <a href="{% url 'users:create' %}" class="btn btn-outline-success text-start">
-            <i class="bi bi-person-badge me-2"></i>Nouvel utilisateur
+          <a href="{% url 'staff:create' %}" class="btn btn-outline-success text-start">
+            <i class="bi bi-person-badge me-2"></i>Ajouter du personnel
           </a>
-          <a href="{% url 'academic:year_create' %}" class="btn btn-outline-info text-start">
-            <i class="bi bi-calendar-plus me-2"></i>Nouvelle année scolaire
+          <a href="{% url 'users:create' %}" class="btn btn-outline-info text-start">
+            <i class="bi bi-person-gear me-2"></i>Créer un utilisateur
           </a>
           <a href="{% url 'enrollment:create' %}" class="btn btn-outline-warning text-start">
-            <i class="bi bi-clipboard-plus me-2"></i>Inscrire un élève
+            <i class="bi bi-clipboard-check me-2"></i>Nouvelle inscription
           </a>
-          <a href="{% url 'communication:index' %}" class="btn btn-outline-secondary text-start">
-            <i class="bi bi-megaphone me-2"></i>Publier une annonce
+          <a href="{% url 'finance:payment_create' %}" class="btn btn-outline-secondary text-start">
+            <i class="bi bi-cash-coin me-2"></i>Enregistrer un paiement
           </a>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Quick Access Modules -->
   <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
+    <div class="card border-0 shadow-sm h-100">
       <div class="card-header bg-transparent border-0 pb-0">
-        <h6 class="fw-semibold mb-0"><i class="bi bi-grid me-2 text-primary"></i>Modules de gestion</h6>
+        <h6 class="fw-semibold mb-0"><i class="bi bi-grid me-2 text-primary"></i>Modules</h6>
       </div>
       <div class="card-body">
-        <div class="row g-3">
-          {% for item in sidebar_menu %}
-          {% if not forloop.first %}
-          <div class="col-6 col-md-4">
-            <a href="{% url item.url %}" class="module-tile">
-              <i class="bi {{ item.icon }} module-tile-icon"></i>
-              <span class="module-tile-label">{{ item.label }}</span>
+        <div class="row g-2">
+          <div class="col-4 col-md-3">
+            <a href="{% url 'students:list' %}" class="module-tile">
+              <i class="bi bi-person-vcard module-tile-icon text-primary"></i>
+              <span class="module-tile-label">Élèves</span>
             </a>
           </div>
-          {% endif %}
-          {% endfor %}
+          <div class="col-4 col-md-3">
+            <a href="{% url 'parents:list' %}" class="module-tile">
+              <i class="bi bi-people-fill module-tile-icon text-success"></i>
+              <span class="module-tile-label">Parents</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'staff:list' %}" class="module-tile">
+              <i class="bi bi-person-badge module-tile-icon text-info"></i>
+              <span class="module-tile-label">Personnel</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'enrollment:index' %}" class="module-tile">
+              <i class="bi bi-clipboard-check module-tile-icon text-warning"></i>
+              <span class="module-tile-label">Inscriptions</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'timetable:index' %}" class="module-tile">
+              <i class="bi bi-calendar-week module-tile-icon text-primary"></i>
+              <span class="module-tile-label">Emplois du temps</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'assessments:index' %}" class="module-tile">
+              <i class="bi bi-pencil-square module-tile-icon text-danger"></i>
+              <span class="module-tile-label">Évaluations</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'finance:index' %}" class="module-tile">
+              <i class="bi bi-cash-coin module-tile-icon text-success"></i>
+              <span class="module-tile-label">Finance</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'reports:index' %}" class="module-tile">
+              <i class="bi bi-file-text module-tile-icon text-secondary"></i>
+              <span class="module-tile-label">Bulletins</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'communication:index' %}" class="module-tile">
+              <i class="bi bi-chat-dots module-tile-icon text-primary"></i>
+              <span class="module-tile-label">Communication</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'transport:index' %}" class="module-tile">
+              <i class="bi bi-bus-front module-tile-icon text-warning"></i>
+              <span class="module-tile-label">Transport</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'documents:index' %}" class="module-tile">
+              <i class="bi bi-folder module-tile-icon text-info"></i>
+              <span class="module-tile-label">Documents</span>
+            </a>
+          </div>
+          <div class="col-4 col-md-3">
+            <a href="{% url 'analytics:index' %}" class="module-tile">
+              <i class="bi bi-bar-chart module-tile-icon text-secondary"></i>
+              <span class="module-tile-label">Statistiques</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

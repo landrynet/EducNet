@@ -1,0 +1,1 @@
+- [EduManager project setup](edumanager-setup.md) — Django multi-tenant school app; run with `PORT=5000 bash run.sh`; seed data via `python seed_test_data.py`

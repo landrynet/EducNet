@@ -6,3 +6,11 @@ pillow>=10.0
 python-decouple>=3.8
 whitenoise>=6.6
 django-extensions>=3.2
+crispy-bootstrap5
+django
+django-crispy-forms
+django-extensions
+djangorestframework
+pillow
+python-decouple
+whitenoise

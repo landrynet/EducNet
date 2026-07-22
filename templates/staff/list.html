@@ -6,12 +6,40 @@
     <h4 class="mb-0 fw-bold">Personnel</h4>
     <p class="text-muted small mb-0">{{ page_obj.paginator.count }} membre(s)</p>
   </div>
+  <a href="{% url 'staff:create' %}" class="btn btn-primary">
+    <i class="bi bi-person-plus me-1"></i>Ajouter un membre
+  </a>
 </div>
+
 <div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm"
+             placeholder="Nom, prénom, matricule..." style="max-width:260px;" />
+      <select name="type" class="form-select form-select-sm" style="max-width:180px;">
+        <option value="">Tous les types</option>
+        <option value="teacher" {% if staff_type == 'teacher' %}selected{% endif %}>Enseignants</option>
+        <option value="admin" {% if staff_type == 'admin' %}selected{% endif %}>Administratifs</option>
+        <option value="support" {% if staff_type == 'support' %}selected{% endif %}>Personnel de soutien</option>
+      </select>
+      <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+      {% if search or staff_type %}
+        <a href="{% url 'staff:list' %}" class="btn btn-sm btn-outline-secondary">Effacer</a>
+      {% endif %}
+    </form>
+  </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
-        <tr><th class="ps-4">Nom</th><th>Type</th><th>Contrat</th><th>Spécialisation</th><th>Statut</th></tr>
+        <tr>
+          <th class="ps-4">Membre du personnel</th>
+          <th>Rôle</th>
+          <th>Type</th>
+          <th>Contrat</th>
+          <th>Matricule</th>
+          <th>Statut</th>
+          <th class="text-end pe-4">Actions</th>
+        </tr>
       </thead>
       <tbody>
         {% for s in page_obj %}
@@ -25,16 +53,56 @@
               </div>
             </div>
           </td>
-          <td><span class="badge bg-primary-subtle text-primary">{{ s.get_staff_type_display }}</span></td>
+          <td><span class="badge bg-primary-subtle text-primary">{{ s.user.get_role_display }}</span></td>
+          <td class="text-muted small">{{ s.get_staff_type_display }}</td>
           <td class="text-muted small">{{ s.get_contract_type_display }}</td>
-          <td class="text-muted small">{{ s.specialization|default:"—" }}</td>
-          <td>{% if s.is_active %}<span class="badge bg-success-subtle text-success">Actif</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">Inactif</span>{% endif %}</td>
+          <td>
+            {% if s.employee_id %}
+              <span class="badge bg-light text-dark border font-monospace">{{ s.employee_id }}</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.is_active %}
+              <span class="badge bg-success-subtle text-success rounded-pill">Actif</span>
+            {% else %}
+              <span class="badge bg-secondary-subtle text-secondary rounded-pill">Inactif</span>
+            {% endif %}
+          </td>
+          <td class="text-end pe-4">
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'staff:detail' s.pk %}" class="btn btn-outline-secondary" title="Voir">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'staff:edit' s.pk %}" class="btn btn-outline-primary" title="Modifier">
+                <i class="bi bi-pencil"></i>
+              </a>
+              <form method="post" action="{% url 'staff:toggle' s.pk %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-{% if s.is_active %}warning{% else %}success{% endif %}"
+                        title="{% if s.is_active %}Désactiver{% else %}Activer{% endif %}"
+                        onclick="return confirm('{% if s.is_active %}Désactiver{% else %}Activer{% endif %} ce membre du personnel ?')">
+                  <i class="bi bi-{% if s.is_active %}pause-circle{% else %}play-circle{% endif %}"></i>
+                </button>
+              </form>
+            </div>
+          </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-person-badge fs-1 d-block mb-2 opacity-25"></i>Aucun personnel enregistré.</td></tr>
+        <tr>
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="bi bi-person-badge fs-1 d-block mb-2 opacity-25"></i>
+            Aucun membre du personnel trouvé.
+            <a href="{% url 'staff:create' %}">Ajouter le premier</a>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer bg-transparent">{% include 'partials/pagination.html' %}</div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,353 @@
+# PROMPT – Système de Gestion Scolaire Multi-Site V1.1
+
+## Amélioration, Vérification, Stabilisation et Design
+
+Tu as terminé la Version 1 du système de gestion scolaire multi-site.
+
+Avant de commencer le développement de la V1.1, tu dois obligatoirement vérifier l'état réel de la V1 existante.
+
+---
+
+# 1. AUDIT OBLIGATOIRE DE LA V1
+
+Dans le projet, il existe un dossier contenant les prompts et instructions de développement de la V1.
+
+Tu dois :
+
+1. Lire et analyser les fichiers présents dans le dossier `prompts` ou dans le dossier contenant les instructions de la V1.
+2. Vérifier les objectifs initialement prévus pour la V1.
+3. Comparer ces objectifs avec ce qui a réellement été développé.
+4. Identifier les fonctionnalités terminées.
+5. Identifier les fonctionnalités incomplètes.
+6. Identifier les fichiers incomplets ou inutilisés.
+7. Identifier les bugs existants.
+8. Vérifier les routes.
+9. Vérifier les modèles de base de données.
+10. Vérifier les permissions et les rôles.
+11. Vérifier l'authentification.
+12. Vérifier l'isolation des données entre les écoles.
+13. Vérifier les migrations.
+14. Vérifier la configuration du projet.
+
+Tu dois d'abord produire une analyse interne complète de la V1 avant d'appliquer les modifications de la V1.1.
+
+---
+
+# 2. LA V1 DOIT ÊTRE UNE BASE SOLIDE
+
+La V1.1 ne doit pas être construite sur une base instable.
+
+Avant d'ajouter des améliorations, tu dois corriger :
+
+* Les bugs existants.
+* Les erreurs de logique.
+* Les routes cassées.
+* Les liens incorrects.
+* Les formulaires incomplets.
+* Les erreurs de permissions.
+* Les problèmes d'authentification.
+* Les problèmes d'isolation entre établissements.
+* Les fichiers incomplets.
+* Les fonctionnalités qui ne fonctionnent pas correctement.
+
+Si un problème de la V1 empêche la stabilité du système, il doit être corrigé avant de continuer.
+
+---
+
+# 3. RÈGLE ABSOLUE : NE RIEN CASSER
+
+Pendant le développement de la V1.1 :
+
+* Ne pas casser les fonctionnalités fonctionnelles de la V1.
+* Ne pas supprimer une fonctionnalité existante sans justification.
+* Ne pas modifier inutilement l'architecture.
+* Ne pas modifier les modèles de données sans vérifier les conséquences.
+* Ne pas casser les permissions.
+* Ne pas casser l'authentification.
+* Ne pas casser l'isolation des écoles.
+* Ne pas casser les routes existantes.
+* Ne pas créer de régression.
+
+Chaque modification doit être testée.
+
+La stabilité est prioritaire sur l'ajout de nouvelles fonctionnalités.
+
+---
+
+# 4. SCRIPT DE DONNÉES DE TEST V1
+
+Créer un script dédié pour générer des données de test réalistes pour la V1.
+
+Le script doit pouvoir créer automatiquement un environnement de test complet comprenant :
+
+* Une plateforme.
+* Plusieurs écoles.
+* Des utilisateurs.
+* Les différents rôles.
+* Des comptes administrateurs.
+* Des enseignants.
+* Des secrétaires.
+* Des comptables.
+* Des données de démonstration nécessaires au fonctionnement de la V1.
+
+Le script doit être :
+
+* Reproductible.
+* Facile à exécuter.
+* Documenté.
+* Sécurisé.
+* Utilisable uniquement pour l'environnement de développement ou de test.
+
+Créer par exemple un fichier du type :
+
+`seed_test_data.py`
+
+ou utiliser la structure appropriée au framework utilisé.
+
+Le script doit permettre de tester facilement :
+
+* La connexion.
+* Les différents rôles.
+* Les permissions.
+* L'isolation des écoles.
+* Les tableaux de bord.
+* Les principales fonctionnalités de la V1.
+
+Ne jamais utiliser de vraies données personnelles.
+
+---
+
+# 5. TEST COMPLET DE LA V1
+
+Après la création des données de test, tester le système avec plusieurs comptes.
+
+Vérifier notamment :
+
+## Authentification
+
+* Connexion.
+* Déconnexion.
+* Mauvais mot de passe.
+* Session expirée.
+* Accès non autorisé.
+
+## Rôles
+
+Vérifier que chaque rôle voit uniquement ce qu'il doit voir.
+
+## Multi-Site
+
+Vérifier qu'un utilisateur d'une école ne peut jamais accéder aux données d'une autre école.
+
+## Navigation
+
+Vérifier :
+
+* Toutes les routes.
+* Tous les liens.
+* Les boutons.
+* Les formulaires.
+* Les redirections.
+
+## Base de données
+
+Vérifier :
+
+* Les migrations.
+* Les relations.
+* Les contraintes.
+* Les données de test.
+
+---
+
+# 6. LIEN FIGMA – DESIGN DE RÉFÉRENCE
+
+Je vais fournir un lien Figma contenant le design UI/UX de référence.
+
+Lien Figma :
+
+[COLLER ICI LE LIEN FIGMA]
+
+Tu dois utiliser ce design comme référence principale pour améliorer l'interface de la V1.1.
+
+---
+
+# 7. REFONTE UI/UX V1.1
+
+Adapter progressivement l'application au design Figma :
+
+* Navbar moderne.
+* Sidebar moderne selon le rôle.
+* Icônes professionnelles.
+* Cartes statistiques.
+* Tableaux améliorés.
+* Formulaires modernes.
+* Pages de connexion améliorées.
+* Pages de profil.
+* Pages de paramètres.
+* Messages d'erreur et de succès élégants.
+* Interface responsive.
+* Design cohérent sur toutes les pages.
+
+Le design ne doit pas être uniquement appliqué à une seule page.
+
+L'ensemble de l'application doit avoir une identité visuelle cohérente.
+
+---
+
+# 8. AMÉLIORATION DES TABLEAUX DE BORD
+
+Chaque rôle doit avoir un tableau de bord adapté à ses permissions.
+
+## Super Admin
+
+Vue globale de la plateforme.
+
+## Admin École
+
+Vue globale de son établissement.
+
+## Secrétaire
+
+Vue administrative.
+
+## Enseignant
+
+Vue de ses activités.
+
+## Comptable
+
+Vue financière.
+
+Les données affichées doivent toujours respecter les permissions et l'établissement de l'utilisateur.
+
+---
+
+# 9. AMÉLIORATION DE LA NAVIGATION
+
+Créer une navigation claire :
+
+* Sidebar dynamique selon le rôle.
+* Menus visibles uniquement selon les permissions.
+* Breadcrumbs.
+* Actions principales clairement visibles.
+* Navigation cohérente.
+* Pages accessibles uniquement aux utilisateurs autorisés.
+
+---
+
+# 10. SÉCURITÉ ET CONTRÔLE D'ACCÈS
+
+Renforcer :
+
+* La gestion des permissions.
+* La protection des URLs.
+* Le contrôle d'accès par rôle.
+* L'isolation stricte des écoles.
+* La validation des formulaires.
+* La sécurité des sessions.
+* La gestion des mots de passe.
+
+---
+
+# 11. AMÉLIORATION DES PERFORMANCES
+
+Optimiser :
+
+* Le temps de chargement.
+* Les requêtes à la base de données.
+* La pagination.
+* Le chargement des composants.
+* La structure du code.
+
+---
+
+# 12. AMÉLIORATION DE L'EXPÉRIENCE UTILISATEUR
+
+Ajouter ou améliorer :
+
+* Notifications visuelles.
+* Messages de confirmation.
+* États de chargement.
+* Pages vides élégantes.
+* Pages d'erreur personnalisées : 403, 404, 500.
+* Confirmation avant suppression.
+* Messages d'erreur compréhensibles.
+
+---
+
+# 13. QUALITÉ DU CODE
+
+Avant chaque modification importante :
+
+* Analyser le code existant.
+* Comprendre son fonctionnement.
+* Ne pas réécrire inutilement ce qui fonctionne.
+* Garder une architecture modulaire.
+* Nettoyer le code inutilisé.
+* Vérifier les fichiers incomplets.
+* Ajouter une documentation technique lorsque nécessaire.
+
+---
+
+# 14. VALIDATION FINALE DE LA V1.1
+
+Avant de considérer la V1.1 comme terminée, effectuer un audit final complet.
+
+Vérifier :
+
+* Que toutes les fonctionnalités de la V1 fonctionnent toujours.
+* Que les bugs identifiés ont été corrigés.
+* Que les nouveaux changements ne créent pas de régression.
+* Que toutes les routes fonctionnent.
+* Que tous les rôles fonctionnent.
+* Que l'isolation des écoles fonctionne.
+* Que les migrations fonctionnent.
+* Que le script de données de test fonctionne.
+* Que les données de test peuvent être recréées.
+* Que l'interface est cohérente.
+* Que les fichiers ne sont pas incomplets.
+* Que le système peut être lancé proprement.
+
+Créer également une liste de contrôle de validation finale.
+
+---
+
+# 15. PRÉPARATION DES PROCHAINES VERSIONS
+
+La V1.1 doit préparer l'intégration future de :
+
+* Présences.
+* Évaluations avancées.
+* Bulletins.
+* Finance avancée.
+* Portail Parent.
+* Portail Élève.
+* Notifications.
+
+Ne pas casser l'architecture Multi-Site existante.
+
+---
+
+# RÈGLE IMPORTANTE
+
+Ne pas utiliser Django Admin.
+
+Toutes les interfaces doivent rester dans le tableau de bord personnalisé.
+
+La priorité de la V1.1 est :
+
+1. Vérifier la V1.
+2. Corriger les bugs.
+3. Stabiliser le système.
+4. Créer les données de test.
+5. Tester tous les rôles et toutes les écoles.
+6. Améliorer l'interface selon Figma.
+7. Éviter toute régression.
+8. Préparer proprement les prochaines versions.
+
+La V1.1 doit être une version stable, propre et professionnelle.
+
+Ne considère pas la V1.1 comme terminée simplement parce que le code compile.
+
+Elle doit être vérifiée, testée et stable.

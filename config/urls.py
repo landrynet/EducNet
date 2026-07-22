@@ -28,6 +28,11 @@ urlpatterns = [
     path('api/v1/', include('apps.users.api_urls')),
 ]
 
+# Custom error handlers
+handler403 = 'apps.dashboard.error_views.error_403'
+handler404 = 'apps.dashboard.error_views.error_404'
+handler500 = 'apps.dashboard.error_views.error_500'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
