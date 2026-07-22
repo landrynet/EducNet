@@ -1,0 +1,528 @@
+# PROMPT – FINALISATION DU MODULE SUPER ADMIN ET PROCESSUS DE CRÉATION D'UNE ÉCOLE
+
+## V1.3 – Correction définitive avant validation de la V1
+
+⚠️ PRIORITÉ ABSOLUE
+
+Nous devons finaliser et corriger définitivement le fonctionnement du Super Admin et du processus de création d'une école avant de considérer la V1 comme terminée.
+
+Ne pas passer à la prochaine version tant que ce processus n'est pas correctement implémenté, testé et validé.
+
+---
+
+# 1. PROCESSUS DE CRÉATION D'UNE ÉCOLE
+
+Le Super Admin doit créer une école sans avoir à créer manuellement tous les utilisateurs de l'école.
+
+Le processus doit être :
+
+```text
+SUPER ADMIN
+    ↓
+Créer une école
+    ↓
+Saisir les informations de base
+    ↓
+Enregistrer l'école
+    ↓
+Le système crée l'école
+    ↓
+Le système crée automatiquement un accès temporaire
+    ↓
+Les identifiants temporaires sont transmis au responsable de l'école
+```
+
+---
+
+# 2. INFORMATIONS SAISIES PAR LE SUPER ADMIN
+
+Lors de la création de l'école, le Super Admin saisit uniquement les informations initiales nécessaires :
+
+* Nom de l'école.
+* Adresse.
+* Ville.
+* Pays.
+* Téléphone de contact initial.
+* E-mail de contact initial.
+* Informations administratives nécessaires.
+* Logo si nécessaire.
+
+Le Super Admin ne doit pas avoir à remplir toutes les informations détaillées du futur administrateur de l'école.
+
+---
+
+# 3. CRÉATION AUTOMATIQUE DE L'ACCÈS INITIAL
+
+Après la création de l'école, le système doit générer automatiquement un compte initial pour le responsable ou l'administrateur de l'école.
+
+Le compte initial doit comporter :
+
+* Un identifiant unique.
+* Un mot de passe temporaire.
+
+Exemple :
+
+```text
+Identifiant :
+admin@ecole.com
+
+Mot de passe temporaire :
+Xxxxxxxx
+```
+
+L'identifiant peut être un e-mail ou un autre identifiant unique défini par le système.
+
+Le Super Admin doit pouvoir transmettre ces informations au responsable de l'école de manière appropriée.
+
+⚠️ Le mot de passe temporaire ne doit pas être affiché inutilement dans les listes ou les pages de détails de l'école.
+
+---
+
+# 4. PREMIÈRE CONNEXION
+
+Lors de la première connexion, l'administrateur de l'école doit obligatoirement saisir :
+
+```text
+Identifiant
++
+Mot de passe temporaire
+```
+
+Exemple :
+
+```text
+E-mail / Identifiant
+[ admin@ecole.com ]
+
+Mot de passe temporaire
+[ ************** ]
+
+[ SE CONNECTER ]
+```
+
+Le système doit vérifier :
+
+1. Que l'identifiant existe.
+2. Que le compte correspond à l'école concernée.
+3. Que le mot de passe temporaire est correct.
+4. Que le compte est bien en état de première connexion.
+
+Après authentification réussie, le système doit détecter qu'il s'agit de la première connexion.
+
+---
+
+# 5. CHANGEMENT OBLIGATOIRE DU MOT DE PASSE
+
+Après la première connexion avec :
+
+```text
+Identifiant
++
+Mot de passe temporaire
+```
+
+l'administrateur doit obligatoirement être redirigé vers une page de changement de mot de passe.
+
+Il ne doit pas pouvoir accéder au dashboard normal avant d'avoir terminé cette étape.
+
+La page doit contenir :
+
+```text
+Identifiant :
+[ admin@ecole.com ]
+
+Mot de passe temporaire :
+[ ************** ]
+
+Nouveau mot de passe :
+[                 ]
+
+Confirmer le nouveau mot de passe :
+[                 ]
+
+[ CHANGER LE MOT DE PASSE ]
+```
+
+Le système doit vérifier :
+
+* Que le nouveau mot de passe respecte les règles de sécurité.
+* Que les deux nouveaux mots de passe correspondent.
+* Que le mot de passe temporaire est valide.
+* Que l'utilisateur est bien autorisé à effectuer cette modification.
+
+Après validation :
+
+```text
+Mot de passe temporaire
+        ↓
+Invalidé
+        ↓
+Nouveau mot de passe
+        ↓
+Activé
+```
+
+Le mot de passe temporaire ne doit plus être utilisable après le changement.
+
+---
+
+# 6. ASSISTANT DE CONFIGURATION INITIALE
+
+Après le changement obligatoire du mot de passe, l'administrateur doit être redirigé vers un assistant de configuration initiale.
+
+Processus :
+
+```text
+Identifiant
+    +
+Mot de passe temporaire
+        ↓
+Première connexion
+        ↓
+Changement obligatoire du mot de passe
+        ↓
+Assistant de configuration
+```
+
+---
+
+# 7. ÉTAPE 1 – INFORMATIONS DU RESPONSABLE
+
+L'administrateur doit pouvoir compléter ou modifier ses informations :
+
+* Nom complet.
+* Téléphone.
+* E-mail.
+* Fonction.
+* Informations de contact nécessaires.
+
+Ces informations doivent être séparées des informations de connexion.
+
+L'e-mail ou l'identifiant de connexion ne doit pas être modifié automatiquement sans processus approprié.
+
+---
+
+# 8. ÉTAPE 2 – INFORMATIONS DE L'ÉCOLE
+
+L'administrateur doit pouvoir compléter ou confirmer les informations de son établissement :
+
+* Nom officiel.
+* Adresse.
+* Téléphone.
+* E-mail.
+* Informations de contact.
+* Logo.
+* Autres informations nécessaires.
+
+Il doit pouvoir corriger ou compléter les informations initiales selon les permissions prévues.
+
+---
+
+# 9. ÉTAPE 3 – VÉRIFICATION
+
+Afficher un résumé des informations :
+
+```text
+Informations de l'école
++
+Informations du responsable
++
+Informations du compte
+```
+
+L'administrateur doit pouvoir vérifier les informations avant de confirmer.
+
+---
+
+# 10. ÉTAPE 4 – VALIDATION
+
+Ajouter un bouton clair :
+
+`Terminer la configuration`
+
+Après validation :
+
+```text
+Configuration terminée
+        ↓
+Compte activé normalement
+        ↓
+Accès au dashboard
+```
+
+L'assistant de configuration ne doit plus être affiché une fois terminé.
+
+---
+
+# 11. CONNEXIONS SUIVANTES
+
+Après la première configuration :
+
+```text
+Identifiant
+    +
+Nouveau mot de passe
+        ↓
+Connexion
+        ↓
+Dashboard de l'école
+```
+
+L'assistant de configuration ne doit plus apparaître.
+
+---
+
+# 12. VISIBILITÉ DU SUPER ADMIN
+
+Le Super Admin ne doit pas voir tous les utilisateurs d'une école.
+
+Lorsqu'il consulte une école, il ne doit pas voir une liste complète contenant :
+
+* Tous les enseignants.
+* Tous les secrétaires.
+* Tous les comptables.
+* Tous les autres utilisateurs internes.
+
+La vue du Super Admin doit rester centrée sur :
+
+* L'établissement.
+* Son statut.
+* Ses informations générales.
+* Ses informations de contact.
+* Le responsable principal de l'établissement si nécessaire.
+
+---
+
+# 13. LE SUPER ADMIN NE DOIT PAS VOIR LES IDENTIFIANTS DE CONNEXION
+
+Le Super Admin ne doit jamais voir :
+
+* Les mots de passe.
+* Les mots de passe temporaires après leur utilisation.
+* Les mots de passe enregistrés.
+* Les hash de mots de passe.
+* Les tokens sensibles.
+
+Même dans la page Détails d'une école, ne jamais afficher les informations sensibles de connexion.
+
+---
+
+# 14. PAGE « DÉTAILS DE L'ÉCOLE »
+
+Le bouton :
+
+`Détails`
+
+doit afficher une fiche organisée.
+
+## Informations générales
+
+* Nom de l'école.
+* Adresse.
+* Ville.
+* Pays.
+* Statut.
+* Date de création.
+
+## Informations de contact
+
+* Téléphone.
+* E-mail.
+* Adresse.
+* Contact principal.
+
+## Responsable principal
+
+Afficher uniquement les informations nécessaires :
+
+* Nom complet.
+* Fonction.
+* Téléphone de contact.
+* E-mail de contact.
+
+⚠️ Ne pas afficher :
+
+* Mot de passe.
+* Mot de passe temporaire.
+* Hash de mot de passe.
+* Tokens sensibles.
+* Liste complète de tous les utilisateurs de l'école.
+
+---
+
+# 15. RÈGLE DE VISIBILITÉ DU SUPER ADMIN
+
+La logique doit être :
+
+```text
+SUPER ADMIN
+    ↓
+Liste des écoles
+    ↓
+Détails d'une école
+    ↓
+Informations générales
+    +
+Informations de contact
+    +
+Responsable principal
+```
+
+Et non :
+
+```text
+SUPER ADMIN
+    ↓
+École
+    ↓
+Tous les utilisateurs
+    ↓
+Tous les comptes
+    ↓
+Toutes les informations de connexion
+```
+
+---
+
+# 16. VÉRIFICATION TECHNIQUE
+
+Avant de modifier le code, analyser :
+
+* Le modèle École.
+* Le modèle Utilisateur.
+* Les rôles.
+* Les permissions.
+* Les relations entre École et Utilisateur.
+* Le système de première connexion.
+* Le système de mot de passe temporaire.
+* Le système d'authentification.
+* Les vues Super Admin.
+* Les templates.
+* Les routes.
+* Les migrations.
+
+Identifier la cause réelle des problèmes actuels avant d'appliquer les corrections.
+
+---
+
+# 17. TESTS OBLIGATOIRES
+
+Tester le processus complet.
+
+## Création
+
+1. Le Super Admin crée une école.
+2. Le système crée l'école.
+3. Le système génère un identifiant.
+4. Le système génère un mot de passe temporaire.
+5. L'accès initial fonctionne.
+
+## Première connexion
+
+1. L'administrateur saisit son identifiant.
+2. Il saisit son mot de passe temporaire.
+3. Le système valide les informations.
+4. Le système détecte la première connexion.
+5. Le changement de mot de passe devient obligatoire.
+6. L'ancien mot de passe temporaire est invalidé.
+7. Le nouveau mot de passe est enregistré.
+
+## Assistant de configuration
+
+1. L'administrateur complète ses informations.
+2. Il complète les informations de l'école.
+3. Il vérifie les données.
+4. Il valide la configuration.
+5. Le dashboard devient accessible.
+
+## Connexion suivante
+
+1. L'administrateur se déconnecte.
+2. Il saisit son identifiant.
+3. Il saisit son nouveau mot de passe.
+4. Il se connecte.
+5. Il arrive directement sur son dashboard.
+6. L'assistant ne réapparaît plus.
+
+## Super Admin
+
+Vérifier que le Super Admin :
+
+* Voit l'école.
+* Voit les informations générales.
+* Voit les informations de contact.
+* Peut voir le responsable principal si nécessaire.
+* Ne voit pas les mots de passe.
+* Ne voit pas les mots de passe temporaires après leur utilisation.
+* Ne voit pas les hash.
+* Ne voit pas les tokens sensibles.
+* Ne voit pas tous les utilisateurs internes.
+* Ne voit pas inutilement tous les comptes de l'école.
+
+---
+
+# 18. OBJECTIF FINAL
+
+Le processus final doit être :
+
+```text
+SUPER ADMIN
+    ↓
+Crée l'école
+    ↓
+Le système génère :
+- Identifiant initial
+- Mot de passe temporaire
+    ↓
+Le responsable reçoit ses identifiants
+    ↓
+Première connexion avec :
+- Identifiant
+- Mot de passe temporaire
+    ↓
+Changement obligatoire du mot de passe
+    ↓
+Assistant de configuration
+    ↓
+Complétion des informations
+    ↓
+Validation
+    ↓
+Dashboard de l'école
+```
+
+Ensuite :
+
+```text
+Connexion suivante
+    ↓
+Identifiant
+    ↓
+Nouveau mot de passe
+    ↓
+Dashboard directement
+```
+
+---
+
+# RÈGLE FINALE
+
+Cette fonctionnalité doit être entièrement terminée et testée avant de considérer la V1 comme validée.
+
+Le processus complet doit fonctionner de bout en bout :
+
+* Création de l'école.
+* Génération de l'identifiant initial.
+* Génération du mot de passe temporaire.
+* Première connexion avec identifiant + mot de passe temporaire.
+* Changement obligatoire du mot de passe.
+* Invalidité du mot de passe temporaire.
+* Assistant de configuration.
+* Complétion des informations.
+* Validation.
+* Accès au dashboard.
+* Connexions suivantes avec identifiant + nouveau mot de passe.
+* Protection des données sensibles.
+* Visibilité limitée du Super Admin.
+
+Ne pas considérer le travail comme terminé tant que tout ce processus n'a pas été testé avec succès.
