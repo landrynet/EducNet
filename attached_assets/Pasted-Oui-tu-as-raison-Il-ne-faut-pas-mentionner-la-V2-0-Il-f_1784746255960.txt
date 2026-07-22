@@ -1,0 +1,371 @@
+Oui, tu as raison. Il ne faut pas mentionner la V2.0. Il faut simplement dire que **le travail de la V1.2 a été interrompu et qu'il faut le reprendre et le terminer**.
+
+Voici la correction :
+
+# PROMPT – Système de Gestion Scolaire Multi-Site V1.3
+
+## Reprise du travail interrompu et finalisation de la V1.2
+
+⚠️ PRIORITÉ URGENTE
+
+Un autre agent était déjà en train de travailler sur la V1.2, mais le travail s'est arrêté brusquement avant d'être terminé.
+
+Tu dois reprendre ce travail et terminer complètement les tâches restantes de la V1.2.
+
+---
+
+# 1. PROMPT DE RÉFÉRENCE À VÉRIFIER
+
+Dans le projet, rechercher précisément le fichier ou le prompt suivant :
+
+`Pasted--PROMPT-Syst-me-de-Gestion-Scolaire-Multi-Site-V1-2-Fin_1784744785435`
+
+Ce prompt contient les instructions de la V1.2.
+
+Tu dois :
+
+1. Rechercher ce fichier dans le projet.
+2. Lire son contenu complet.
+3. Comprendre toutes les tâches demandées.
+4. Vérifier ce qui a déjà été réalisé.
+5. Vérifier ce qui a été partiellement réalisé.
+6. Identifier ce qui n'a pas encore été réalisé.
+7. Identifier les bugs ou problèmes introduits.
+8. Reprendre le travail exactement là où l'autre agent s'est arrêté.
+
+⚠️ Ne pas recommencer inutilement ce qui a déjà été correctement terminé.
+
+---
+
+# 2. REPRENDRE LE TRAVAIL DE LA V1.2
+
+Le prompt :
+
+`Pasted--PROMPT-Syst-me-de-Gestion-Scolaire-Multi-Site-V1-2-Fin_1784744785435`
+
+doit être considéré comme la référence principale.
+
+Vérifier notamment les tâches suivantes :
+
+* Boutons d'enregistrement des formulaires.
+* Fonctionnement des actions Enregistrer, Ajouter, Modifier et Mettre à jour.
+* Permissions du Super Admin.
+* Visibilité des utilisateurs.
+* Informations de contact liées à l'école.
+* Bouton Détails.
+* Permissions de l'Administrateur d'École.
+* Consultation des finances selon ses permissions.
+* Consultation des évaluations selon ses permissions.
+* Sidebar dynamique selon le rôle.
+* Masquage des modules non autorisés.
+* Protection des URLs côté serveur.
+* Recherche dynamique des élèves.
+* Recherche par nom.
+* Recherche par prénom.
+* Recherche par matricule.
+* Date de paiement automatique.
+* Recherche et filtres dynamiques.
+* Association Parent/Tuteur – Élève.
+* Recherche dynamique du parent ou tuteur.
+* Recherche dynamique de l'élève.
+* Règle d'association d'un enfant avec un seul tuteur principal.
+* Boutons et actions de l'application.
+
+Vérifier chaque point individuellement.
+
+---
+
+# 3. AUDIT DE L'ÉTAT ACTUEL
+
+Avant de modifier le code, analyser l'état actuel du travail.
+
+Pour chaque tâche de la V1.2, déterminer :
+
+* ✅ Terminé et fonctionnel.
+* ⚠️ Partiellement terminé.
+* ❌ Non terminé.
+* 🐛 Présent mais avec un bug.
+
+Ne pas se contenter de vérifier uniquement le code.
+
+Tester réellement les fonctionnalités.
+
+---
+
+# 4. REPRENDRE EXACTEMENT LÀ OÙ LE TRAVAIL S'EST ARRÊTÉ
+
+L'autre agent était déjà en train de travailler sur la V1.2.
+
+Tu dois donc :
+
+1. Examiner les dernières modifications du projet.
+2. Vérifier les fichiers récemment modifiés.
+3. Vérifier les routes concernées.
+4. Vérifier les modèles concernés.
+5. Vérifier les composants UI concernés.
+6. Vérifier les permissions.
+7. Vérifier les migrations si nécessaire.
+8. Identifier la dernière tâche réellement terminée.
+9. Continuer à partir de ce point.
+
+Ne pas écraser ou supprimer inutilement le travail déjà effectué.
+
+---
+
+# 5. RÈGLE ABSOLUE : NE RIEN CASSER
+
+Pendant la reprise :
+
+* Ne pas casser la V1.
+* Ne pas casser les fonctionnalités déjà terminées de la V1.2.
+* Ne pas modifier inutilement l'architecture.
+* Ne pas supprimer des données.
+* Ne pas supprimer des fonctionnalités fonctionnelles.
+* Ne pas créer de régression.
+* Ne pas modifier les permissions sans vérifier les conséquences.
+
+Chaque modification doit être testée.
+
+---
+
+# 6. VÉRIFICATION DES FORMULAIRES
+
+Vérifier tous les formulaires concernés.
+
+Chaque formulaire doit disposer d'une action claire permettant de :
+
+* Enregistrer.
+* Créer.
+* Ajouter.
+* Modifier.
+* Mettre à jour.
+
+Vérifier que :
+
+* Le bouton est visible.
+* Le bouton fonctionne.
+* Les données sont réellement enregistrées.
+* Un message de succès apparaît.
+* Une erreur est affichée correctement en cas d'échec.
+* Les données restent disponibles après actualisation de la page.
+
+---
+
+# 7. VÉRIFICATION DES PERMISSIONS
+
+Tester chaque rôle.
+
+Le système doit afficher uniquement les modules et actions autorisés.
+
+Si un module ne concerne pas un rôle :
+
+* Ne pas l'afficher dans la sidebar.
+* Ne pas l'afficher dans les menus.
+* Bloquer l'accès direct par URL.
+
+Les permissions doivent être contrôlées côté serveur.
+
+---
+
+# 8. VÉRIFICATION DU SUPER ADMIN
+
+Le Super Admin ne doit pas voir inutilement tous les utilisateurs détaillés de toutes les écoles.
+
+Il doit principalement pouvoir consulter :
+
+* Les écoles.
+* Les responsables d'école.
+* Les administrateurs d'école.
+* Les informations de contact liées à l'établissement.
+
+Les informations de contact doivent être séparées des informations de connexion.
+
+Elles servent notamment à :
+
+* La communication.
+* Le support.
+* La maintenance.
+* L'assistance technique.
+
+Ajouter et vérifier le bouton :
+
+`Détails`
+
+lorsque cela est nécessaire.
+
+---
+
+# 9. VÉRIFICATION DE L'ADMINISTRATEUR D'ÉCOLE
+
+L'Administrateur d'École ne doit pas créer de données financières s'il n'a pas cette permission.
+
+Il doit uniquement consulter les informations autorisées.
+
+Vérifier également son accès aux évaluations selon les permissions définies.
+
+Si une action n'est pas autorisée :
+
+* Elle ne doit pas être affichée.
+* Elle doit être bloquée côté serveur.
+
+---
+
+# 10. VÉRIFICATION DES RECHERCHES ET FILTRES
+
+Les recherches et filtres doivent être dynamiques lorsque cela est pertinent.
+
+Vérifier notamment :
+
+* Recherche par nom.
+* Recherche par prénom.
+* Recherche par matricule.
+* Filtrage par statut.
+* Filtrage par classe.
+* Filtrage par rôle.
+* Filtrage par date.
+
+Les résultats doivent être mis à jour correctement.
+
+Les filtres doivent être adaptés au module concerné.
+
+---
+
+# 11. VÉRIFICATION DU MODULE PAIEMENTS
+
+La recherche d'un élève doit permettre plusieurs méthodes :
+
+* Nom.
+* Prénom.
+* Matricule.
+
+La recherche doit être dynamique.
+
+La date de paiement doit être automatiquement générée au moment de l'enregistrement.
+
+Elle doit être contrôlée côté serveur.
+
+Vérifier :
+
+* La recherche de l'élève.
+* La sélection de l'élève.
+* L'enregistrement du paiement.
+* La date automatique.
+* Le bouton Détails.
+* L'affichage des informations.
+
+---
+
+# 12. VÉRIFICATION DE L'ASSOCIATION PARENT / TUTEUR – ÉLÈVE
+
+L'association doit fonctionner de manière claire :
+
+1. Rechercher l'élève.
+2. Sélectionner l'élève.
+3. Rechercher le parent ou tuteur.
+4. Sélectionner le tuteur.
+5. Confirmer l'association.
+6. Enregistrer.
+
+Règle :
+
+> Un enfant doit avoir un seul tuteur principal.
+
+Si l'enfant est déjà associé à un tuteur :
+
+* Afficher clairement cette information.
+* Empêcher une association incohérente.
+* Permettre une modification ou un remplacement selon les permissions.
+
+Tester réellement cette règle.
+
+---
+
+# 13. TEST COMPLET APRÈS REPRISE
+
+Après avoir terminé les tâches restantes de la V1.2, tester :
+
+* Plusieurs écoles.
+* Plusieurs utilisateurs.
+* Plusieurs rôles.
+* Plusieurs élèves.
+* Plusieurs parents/tuteurs.
+* Plusieurs paiements.
+
+Tester les permissions et l'isolation des données.
+
+---
+
+# 14. VALIDATION FINALE DE LA V1.3
+
+La V1.3 doit être considérée comme une version de finalisation de la V1.2.
+
+Avant de terminer, vérifier :
+
+* Le prompt V1.2 a été entièrement exécuté.
+* Les tâches interrompues ont été terminées.
+* Les fonctionnalités sont réellement fonctionnelles.
+* Les boutons d'enregistrement fonctionnent.
+* Les permissions fonctionnent.
+* Les recherches fonctionnent.
+* Les filtres fonctionnent.
+* Les paiements fonctionnent.
+* La date automatique fonctionne.
+* L'association Parent/Tuteur – Élève fonctionne.
+* La règle d'un seul tuteur principal fonctionne.
+* La sidebar est adaptée aux rôles.
+* Les URLs sont protégées.
+* Aucune régression n'a été créée.
+
+---
+
+# 15. RAPPORT FINAL OBLIGATOIRE
+
+À la fin du travail, fournir un rapport clair indiquant :
+
+## Tâches déjà terminées avant la reprise
+
+* ...
+
+## Tâches terminées pendant la reprise
+
+* ...
+
+## Bugs corrigés
+
+* ...
+
+## Tâches restantes
+
+* ...
+
+## Tests réalisés
+
+* ...
+
+## État final de la V1.2
+
+Indiquer clairement si la V1.2 est :
+
+* Prête à être validée.
+* Ou si des problèmes restent encore à corriger.
+
+---
+
+# RÈGLE FINALE
+
+La priorité absolue est de :
+
+1. Retrouver le prompt V1.2 dans le projet.
+2. Vérifier le travail déjà réalisé par l'autre agent.
+3. Identifier l'endroit exact où il s'est arrêté.
+4. Reprendre le travail.
+5. Terminer toutes les tâches du prompt V1.2.
+6. Tester le système.
+7. Corriger les bugs.
+8. Valider définitivement la V1.2.
+
+Ne pas recommencer inutilement les tâches déjà terminées.
+
+Ne pas considérer le travail comme terminé tant que toutes les instructions du prompt V1.2 n'ont pas été vérifiées et validées.
+
+Oui, cette version est plus précise : **V1.3 est uniquement une reprise et une finalisation du travail interrompu de la V1.2**.
