@@ -1,1 +1,2 @@
 - [EduManager project setup](edumanager-setup.md) — Django multi-tenant school app; run with `PORT=5000 bash run.sh`; seed data via `python seed_test_data.py`
+- [First-login middleware ordering](first-login-middleware.md) — password-change routes must remain exempt until the POST has persisted the new password
