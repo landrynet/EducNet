@@ -17,6 +17,12 @@
         <div class="mb-3">
           <label for="childrenSearch" class="form-label">Rechercher un élève à associer</label>
           <input id="childrenSearch" type="search" class="form-control" placeholder="Nom, prénom ou matricule..." autocomplete="off">
+          <button id="childrenSearchButton" type="button" class="btn btn-outline-primary mt-2">
+            <i class="bi bi-search me-1"></i>Rechercher
+          </button>
+          <div id="childrenSearchMessage" class="form-text mt-2">
+            Saisissez un nom, un prénom ou un matricule, puis cliquez sur Rechercher.
+          </div>
         </div>
         {{ form|crispy }}
         <div class="d-flex gap-2 mt-4">
@@ -34,16 +40,43 @@
 <script>
 (function () {
   const search = document.getElementById('childrenSearch');
+  const searchButton = document.getElementById('childrenSearchButton');
+  const searchMessage = document.getElementById('childrenSearchMessage');
   const boxes = Array.from(document.querySelectorAll('#div_id_children input[type="checkbox"]'));
-  if (!search || !boxes.length) return;
-  search.addEventListener('input', function () {
-    const query = this.value.trim().toLocaleLowerCase();
+  if (!search || !searchButton || !boxes.length) return;
+  const rows = boxes.map(function (box) {
+    return box.closest('.form-check') || box.parentElement;
+  });
+  rows.forEach(function (row) {
+    row.hidden = true;
+  });
+
+  function runSearch() {
+    const query = search.value.trim().toLocaleLowerCase();
+    if (!query) {
+      rows.forEach(function (row) { row.hidden = true; });
+      searchMessage.textContent = 'Saisissez un nom, un prénom ou un matricule, puis cliquez sur Rechercher.';
+      return;
+    }
+    let matches = 0;
     boxes.forEach(function (box) {
       const label = box.closest('label') || document.querySelector('label[for="' + box.id + '"]');
       const row = box.closest('.form-check') || box.parentElement;
       const text = (label ? label.textContent : '').toLocaleLowerCase();
-      row.hidden = !!query && !text.includes(query);
+      row.hidden = !text.includes(query);
+      if (!row.hidden) matches += 1;
     });
+    searchMessage.textContent = matches
+      ? matches + ' enfant(s) trouvé(s). Cochez le ou les enfant(s) à associer.'
+      : 'Aucun enfant disponible pour cette recherche.';
+  }
+
+  searchButton.addEventListener('click', runSearch);
+  search.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      runSearch();
+    }
   });
 })();
 </script>
