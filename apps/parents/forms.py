@@ -37,7 +37,6 @@ class ParentForm(forms.ModelForm):
             Row(Column('relationship'), Column('profession')),
             Row(Column('phone'), Column('phone2')),
             'email', 'address', 'children',
-            Submit('submit', 'Enregistrer', css_class='btn btn-primary'),
         )
 
     def clean_children(self):
