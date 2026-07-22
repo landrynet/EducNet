@@ -18,11 +18,8 @@
         <div class="mb-3 mt-4">
           <label for="childrenSearch" class="form-label">Rechercher un élève à associer</label>
           <input id="childrenSearch" type="search" class="form-control" placeholder="Nom, prénom ou matricule..." autocomplete="off">
-          <button id="childrenSearchButton" type="button" class="btn btn-outline-primary mt-2">
-            <i class="bi bi-search me-1"></i>Rechercher
-          </button>
           <div id="childrenSearchMessage" class="form-text mt-2">
-            Saisissez un nom, un prénom ou un matricule, puis cliquez sur Rechercher.
+            Commencez à saisir un nom, un prénom ou un matricule pour afficher les élèves.
           </div>
         </div>
         <div class="d-flex gap-2 mt-4">
@@ -40,10 +37,9 @@
 <script>
 (function () {
   const search = document.getElementById('childrenSearch');
-  const searchButton = document.getElementById('childrenSearchButton');
   const searchMessage = document.getElementById('childrenSearchMessage');
   const boxes = Array.from(document.querySelectorAll('#div_id_children input[type="checkbox"]'));
-  if (!search || !searchButton || !boxes.length) return;
+  if (!search || !boxes.length) return;
   const rows = boxes.map(function (box) {
     return box.closest('.form-check') || box.parentElement;
   });
@@ -55,7 +51,7 @@
     const query = search.value.trim().toLocaleLowerCase();
     if (!query) {
       rows.forEach(function (row) { row.hidden = true; });
-      searchMessage.textContent = 'Saisissez un nom, un prénom ou un matricule, puis cliquez sur Rechercher.';
+      searchMessage.textContent = 'Commencez à saisir un nom, un prénom ou un matricule pour afficher les élèves.';
       return;
     }
     let matches = 0;
@@ -71,13 +67,7 @@
       : 'Aucun enfant disponible pour cette recherche.';
   }
 
-  searchButton.addEventListener('click', runSearch);
-  search.addEventListener('keydown', function (event) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      runSearch();
-    }
-  });
+  search.addEventListener('input', runSearch);
 })();
 </script>
 {% endblock %}
