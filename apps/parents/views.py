@@ -32,6 +32,21 @@ def parent_list(request):
 
 @login_required
 @role_required(['admin_ecole', 'secretaire', 'super_admin'])
+def parent_detail(request, pk):
+    school = request.user.school
+    parent = get_object_or_404(
+        Parent.objects.prefetch_related('children'),
+        pk=pk,
+        **({'school': school} if school else {}),
+    )
+    return render(request, 'parents/detail.html', {
+        'parent': parent,
+        'title': f'Détails : {parent.get_full_name()}',
+    })
+
+
+@login_required
+@role_required(['admin_ecole', 'secretaire', 'super_admin'])
 def parent_create(request):
     school = request.user.school
     if request.method == 'POST':

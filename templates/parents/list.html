@@ -33,7 +33,10 @@
             {% for child in parent.children.all %}<span class="badge bg-primary-subtle text-primary me-1">{{ child.get_full_name }}</span>{% empty %}<span class="text-muted small">—</span>{% endfor %}
           </td>
           <td class="text-end pe-4">
-            <a href="{% url 'parents:edit' parent.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Modifier</a>
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'parents:detail' parent.pk %}" class="btn btn-outline-secondary">Détails</a>
+              <a href="{% url 'parents:edit' parent.pk %}" class="btn btn-outline-primary">Modifier</a>
+            </div>
           </td>
         </tr>
         {% empty %}

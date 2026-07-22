@@ -6,4 +6,5 @@ app_name = 'enrollment'
 urlpatterns = [
     path('', views.enrollment_index, name='index'),
     path('create/', views.enrollment_create, name='create'),
+    path('<int:pk>/', views.enrollment_detail, name='detail'),
 ]

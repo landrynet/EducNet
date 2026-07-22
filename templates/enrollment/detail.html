@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'enrollment:index' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="mb-0 fw-bold">Détails de l’inscription</h4>
+</div>
+<div class="card border-0 shadow-sm" style="max-width:760px;">
+  <div class="card-body p-4">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Élève</dt><dd class="col-sm-8">{{ enrollment.student.get_full_name }} ({{ enrollment.student.student_id }})</dd>
+      <dt class="col-sm-4">Classe</dt><dd class="col-sm-8">{{ enrollment.classroom }}</dd>
+      <dt class="col-sm-4">Année scolaire</dt><dd class="col-sm-8">{{ enrollment.academic_year.name }}</dd>
+      <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ enrollment.enrollment_date|date:"d/m/Y" }}</dd>
+      <dt class="col-sm-4">Statut</dt><dd class="col-sm-8">{{ enrollment.get_status_display }}</dd>
+      <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">{{ enrollment.notes|default:"—" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

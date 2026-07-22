@@ -9,10 +9,21 @@
   <a href="{% url 'enrollment:create' %}" class="btn btn-primary"><i class="bi bi-clipboard-plus me-1"></i>Nouvelle inscription</a>
 </div>
 <div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Élève, matricule ou classe..." style="max-width:280px;">
+      <select name="status" class="form-select form-select-sm" style="max-width:170px;">
+        <option value="">Tous les statuts</option>
+        {% for value, label in statuses %}<option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+      {% if search or status %}<a href="{% url 'enrollment:index' %}" class="btn btn-sm btn-outline-secondary">Effacer</a>{% endif %}
+    </form>
+  </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
-        <tr><th class="ps-4">Élève</th><th>Classe</th><th>Année scolaire</th><th>Date</th><th>Statut</th></tr>
+        <tr><th class="ps-4">Élève</th><th>Classe</th><th>Année scolaire</th><th>Date</th><th>Statut</th><th class="text-end pe-4">Actions</th></tr>
       </thead>
       <tbody>
         {% for enrollment in page_obj %}
@@ -26,9 +37,10 @@
               {{ enrollment.get_status_display }}
             </span>
           </td>
+          <td class="text-end pe-4"><a href="{% url 'enrollment:detail' enrollment.pk %}" class="btn btn-sm btn-outline-secondary">Détails</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-clipboard-x fs-1 d-block mb-2 opacity-25"></i>Aucune inscription. <a href="{% url 'enrollment:create' %}">Inscrire un élève</a></td></tr>
+        <tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-clipboard-x fs-1 d-block mb-2 opacity-25"></i>Aucune inscription. <a href="{% url 'enrollment:create' %}">Inscrire un élève</a></td></tr>
         {% endfor %}
       </tbody>
     </table>

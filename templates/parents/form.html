@@ -34,14 +34,15 @@
 <script>
 (function () {
   const search = document.getElementById('childrenSearch');
-  const select = document.getElementById('id_children');
-  if (!search || !select) return;
-  const options = Array.from(select.options);
+  const boxes = Array.from(document.querySelectorAll('#div_id_children input[type="checkbox"]'));
+  if (!search || !boxes.length) return;
   search.addEventListener('input', function () {
     const query = this.value.trim().toLocaleLowerCase();
-    options.forEach(function (option) {
-      const visible = !query || option.text.toLocaleLowerCase().includes(query);
-      option.hidden = !visible;
+    boxes.forEach(function (box) {
+      const label = box.closest('label') || document.querySelector('label[for="' + box.id + '"]');
+      const row = box.closest('.form-check') || box.parentElement;
+      const text = (label ? label.textContent : '').toLocaleLowerCase();
+      row.hidden = !!query && !text.includes(query);
     });
   });
 })();

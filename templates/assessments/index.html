@@ -9,10 +9,21 @@
   <a href="{% url 'assessments:create' %}" class="btn btn-primary"><i class="bi bi-plus me-1"></i>Nouvelle évaluation</a>
 </div>
 <div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Titre, classe ou matière..." style="max-width:280px;">
+      <select name="type" class="form-select form-select-sm" style="max-width:180px;">
+        <option value="">Tous les types</option>
+        {% for value, label in assessment_types %}<option value="{{ value }}" {% if assessment_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+      {% if search or assessment_type %}<a href="{% url 'assessments:index' %}" class="btn btn-sm btn-outline-secondary">Effacer</a>{% endif %}
+    </form>
+  </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
-        <tr><th class="ps-4">Titre</th><th>Classe</th><th>Matière</th><th>Type</th><th>Date</th><th>Note max</th></tr>
+        <tr><th class="ps-4">Titre</th><th>Classe</th><th>Matière</th><th>Type</th><th>Date</th><th>Note max</th><th class="text-end pe-4">Actions</th></tr>
       </thead>
       <tbody>
         {% for a in page_obj %}
@@ -23,9 +34,10 @@
           <td><span class="badge bg-info-subtle text-info">{{ a.get_assessment_type_display }}</span></td>
           <td class="text-muted small">{{ a.date|date:"d/m/Y" }}</td>
           <td class="text-muted">{{ a.max_score }}/{{ a.max_score }}</td>
+          <td class="text-end pe-4"><a href="{% url 'assessments:detail' a.pk %}" class="btn btn-sm btn-outline-secondary">Détails</a></td>
         </tr>
         {% empty %}
-        <tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-pencil-square fs-1 d-block mb-2 opacity-25"></i>Aucune évaluation. <a href="{% url 'assessments:create' %}">Créer la première</a></td></tr>
+        <tr><td colspan="7" class="text-center py-5 text-muted"><i class="bi bi-pencil-square fs-1 d-block mb-2 opacity-25"></i>Aucune évaluation. <a href="{% url 'assessments:create' %}">Créer la première</a></td></tr>
         {% endfor %}
       </tbody>
     </table>

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'assessments:index' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="mb-0 fw-bold">Détails de l’évaluation</h4>
+</div>
+<div class="card border-0 shadow-sm" style="max-width:760px;">
+  <div class="card-body p-4">
+    <h5 class="fw-bold">{{ assessment.title }}</h5>
+    <dl class="row mt-4 mb-0">
+      <dt class="col-sm-4">Classe</dt><dd class="col-sm-8">{{ assessment.classroom }}</dd>
+      <dt class="col-sm-4">Matière</dt><dd class="col-sm-8">{{ assessment.subject }}</dd>
+      <dt class="col-sm-4">Type</dt><dd class="col-sm-8">{{ assessment.get_assessment_type_display }}</dd>
+      <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ assessment.date|date:"d/m/Y" }}</dd>
+      <dt class="col-sm-4">Note maximale</dt><dd class="col-sm-8">{{ assessment.max_score }}</dd>
+      <dt class="col-sm-4">Coefficient</dt><dd class="col-sm-8">{{ assessment.coefficient }}</dd>
+      <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ assessment.description|default:"—" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

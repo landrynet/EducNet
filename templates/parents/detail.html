@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'parents:list' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="mb-0 fw-bold">Détails du parent / tuteur</h4>
+</div>
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h5 class="fw-bold">{{ parent.get_full_name }}</h5>
+        <span class="badge bg-secondary-subtle text-secondary">{{ parent.get_relationship_display }}</span>
+        <hr>
+        <dl class="row small mb-0">
+          <dt class="col-5">Téléphone</dt><dd class="col-7">{{ parent.phone }}</dd>
+          <dt class="col-5">Téléphone 2</dt><dd class="col-7">{{ parent.phone2|default:"—" }}</dd>
+          <dt class="col-5">E-mail</dt><dd class="col-7">{{ parent.email|default:"—" }}</dd>
+          <dt class="col-5">Adresse</dt><dd class="col-7">{{ parent.address|default:"—" }}</dd>
+          <dt class="col-5">Profession</dt><dd class="col-7">{{ parent.profession|default:"—" }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><h6 class="mb-0">Enfants associés ({{ parent.children.count }})</h6></div>
+      <div class="list-group list-group-flush">
+        {% for child in parent.children.all %}
+        <a href="{% url 'students:detail' child.pk %}" class="list-group-item list-group-item-action d-flex justify-content-between">
+          <span>{{ child.get_full_name }}</span><span class="text-muted small">{{ child.student_id }}</span>
+        </a>
+        {% empty %}<div class="p-4 text-muted">Aucun enfant associé.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<a href="{% url 'parents:edit' parent.pk %}" class="btn btn-primary mt-4">Modifier l’association</a>
+{% endblock %}

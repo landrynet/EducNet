@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Q
 from .models import Enrollment
 from apps.authentication.decorators import role_required
 from apps.audit.utils import log_action
@@ -29,9 +30,41 @@ class EnrollmentForm(forms.ModelForm):
 def enrollment_index(request):
     school = request.user.school
     enrollments = Enrollment.objects.filter(school=school).select_related('student', 'classroom', 'academic_year') if school else Enrollment.objects.all()
+    search = request.GET.get('q', '').strip()
+    status = request.GET.get('status', '').strip()
+    if search:
+        enrollments = enrollments.filter(
+            Q(student__first_name__icontains=search)
+            | Q(student__last_name__icontains=search)
+            | Q(student__student_id__icontains=search)
+            | Q(classroom__name__icontains=search)
+        )
+    if status:
+        enrollments = enrollments.filter(status=status)
     paginator = Paginator(enrollments, 20)
     page = paginator.get_page(request.GET.get('page'))
-    return render(request, 'enrollment/index.html', {'page_obj': page, 'title': 'Inscriptions'})
+    return render(request, 'enrollment/index.html', {
+        'page_obj': page,
+        'search': search,
+        'status': status,
+        'statuses': Enrollment.STATUS,
+        'title': 'Inscriptions',
+    })
+
+
+@login_required
+@role_required(['admin_ecole', 'secretaire', 'super_admin'])
+def enrollment_detail(request, pk):
+    school = request.user.school
+    enrollment = get_object_or_404(
+        Enrollment.objects.select_related('student', 'classroom', 'academic_year'),
+        pk=pk,
+        **({'school': school} if school else {}),
+    )
+    return render(request, 'enrollment/detail.html', {
+        'enrollment': enrollment,
+        'title': 'Détails de l’inscription',
+    })
 
 
 @login_required
