@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Sauvegarde & Restauration</h4>
+    <p class="text-muted small mb-0">{{ backups|length }} sauvegarde(s) disponible(s)</p>
+  </div>
+  <form method="post" action="{% url 'backup:create' %}" class="d-inline" onsubmit="return confirm('Créer une sauvegarde maintenant ?')">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary"><i class="bi bi-database-add me-1"></i>Sauvegarder maintenant</button>
+  </form>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="alert alert-info border-0 shadow-sm d-flex gap-3">
+      <i class="bi bi-info-circle-fill fs-4 flex-shrink-0"></i>
+      <div>
+        <strong>Politique de sauvegarde</strong><br>
+        <span class="small">Les sauvegardes sont stockées localement. Pour une protection maximale, exportez les fichiers sur un stockage externe régulièrement.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th class="ps-4">Fichier</th><th>Date de création</th><th>Taille</th></tr>
+      </thead>
+      <tbody>
+        {% for backup in backups %}
+        <tr>
+          <td class="ps-4">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-database-fill text-primary fs-5"></i>
+              <span class="fw-medium font-monospace small">{{ backup.name }}</span>
+            </div>
+          </td>
+          <td class="text-muted small">{{ backup.date|date:"d/m/Y H:i:s" }}</td>
+          <td class="text-muted small">{{ backup.size|filesizeformat }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3" class="text-center py-5 text-muted">
+            <i class="bi bi-database fs-1 d-block mb-2 opacity-25"></i>
+            <p>Aucune sauvegarde. Créez votre première sauvegarde.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0 fw-bold">Organisation académique</h4>
+  <div class="d-flex gap-2">
+    <a href="{% url 'academic:year_create' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar-plus me-1"></i>Année</a>
+    <a href="{% url 'academic:classroom_create' %}" class="btn btn-sm btn-outline-success"><i class="bi bi-plus me-1"></i>Classe</a>
+    <a href="{% url 'academic:subject_create' %}" class="btn btn-sm btn-outline-info"><i class="bi bi-book-half me-1"></i>Matière</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><h6 class="fw-semibold mb-0"><i class="bi bi-calendar3 me-2 text-primary"></i>Années scolaires ({{ years.count }})</h6></div>
+      <div class="list-group list-group-flush">
+        {% for year in years %}
+        <div class="list-group-item d-flex justify-content-between align-items-center border-0">
+          <div>
+            <div class="fw-medium">{{ year.name }}</div>
+            <div class="text-muted small">{{ year.start_date|date:"d/m/Y" }} → {{ year.end_date|date:"d/m/Y" }}</div>
+          </div>
+          {% if year.is_current %}<span class="badge bg-primary rounded-pill">En cours</span>{% endif %}
+        </div>
+        {% empty %}
+        <div class="list-group-item border-0 text-center text-muted py-4">
+          <i class="bi bi-calendar-x d-block fs-3 mb-2 opacity-25"></i>
+          <a href="{% url 'academic:year_create' %}">Créer la première</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><h6 class="fw-semibold mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Classes ({{ classrooms.count }})</h6></div>
+      <div class="list-group list-group-flush">
+        {% for cls in classrooms %}
+        <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+          <div>
+            <div class="fw-medium">{{ cls.name }}</div>
+            <div class="text-muted small">{{ cls.level }} &bull; {{ cls.academic_year.name }}</div>
+          </div>
+          <span class="badge bg-light text-dark border">{{ cls.capacity }} places</span>
+        </div>
+        {% empty %}
+        <div class="list-group-item border-0 text-center text-muted py-4">
+          <i class="bi bi-collection d-block fs-3 mb-2 opacity-25"></i>
+          <a href="{% url 'academic:classroom_create' %}">Créer une classe</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><h6 class="fw-semibold mb-0"><i class="bi bi-book-half me-2 text-info"></i>Matières ({{ subjects.count }})</h6></div>
+      <div class="list-group list-group-flush">
+        {% for subject in subjects %}
+        <div class="list-group-item border-0 d-flex align-items-center gap-2">
+          <div class="rounded-circle" style="width:12px;height:12px;background:{{ subject.color }};flex-shrink:0;"></div>
+          <div>
+            <div class="fw-medium small">{{ subject.name }}</div>
+            <div class="text-muted" style="font-size:.75rem;">Coeff. {{ subject.coefficient }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="list-group-item border-0 text-center text-muted py-4">
+          <i class="bi bi-book d-block fs-3 mb-2 opacity-25"></i>
+          <a href="{% url 'academic:subject_create' %}">Ajouter une matière</a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

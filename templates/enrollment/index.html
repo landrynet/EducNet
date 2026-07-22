@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Inscriptions</h4>
+    <p class="text-muted small mb-0">{{ page_obj.paginator.count }} inscription(s)</p>
+  </div>
+  <a href="{% url 'enrollment:create' %}" class="btn btn-primary"><i class="bi bi-clipboard-plus me-1"></i>Nouvelle inscription</a>
+</div>
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th class="ps-4">Élève</th><th>Classe</th><th>Année scolaire</th><th>Date</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        {% for enrollment in page_obj %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ enrollment.student.get_full_name }}</td>
+          <td class="text-muted">{{ enrollment.classroom }}</td>
+          <td class="text-muted">{{ enrollment.academic_year.name }}</td>
+          <td class="text-muted small">{{ enrollment.enrollment_date|date:"d/m/Y" }}</td>
+          <td>
+            <span class="badge {% if enrollment.status == 'active' %}bg-success-subtle text-success{% elif enrollment.status == 'pending' %}bg-warning-subtle text-warning{% else %}bg-secondary-subtle text-secondary{% endif %}">
+              {{ enrollment.get_status_display }}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-clipboard-x fs-1 d-block mb-2 opacity-25"></i>Aucune inscription. <a href="{% url 'enrollment:create' %}">Inscrire un élève</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}<div class="card-footer bg-transparent">{% include 'partials/pagination.html' %}</div>{% endif %}
+</div>
+{% endblock %}

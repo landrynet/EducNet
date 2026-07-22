@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Parents & Tuteurs</h4>
+    <p class="text-muted small mb-0">{{ page_obj.paginator.count }} contact(s)</p>
+  </div>
+  <a href="{% url 'parents:create' %}" class="btn btn-primary"><i class="bi bi-people me-1"></i>Nouveau parent</a>
+</div>
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom">
+    <form method="get" class="d-flex gap-2">
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Rechercher..." style="max-width:280px;" />
+      <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Nom complet</th><th>Lien</th><th>Téléphone</th><th>Email</th><th>Enfants</th><th class="text-end pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for parent in page_obj %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ parent.get_full_name }}</td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ parent.get_relationship_display }}</span></td>
+          <td class="text-muted small">{{ parent.phone }}</td>
+          <td class="text-muted small">{{ parent.email|default:"—" }}</td>
+          <td>
+            {% for child in parent.children.all %}<span class="badge bg-primary-subtle text-primary me-1">{{ child.get_full_name }}</span>{% empty %}<span class="text-muted small">—</span>{% endfor %}
+          </td>
+          <td class="text-end pe-4">
+            <a href="{% url 'parents:edit' parent.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-5 text-muted"><i class="bi bi-people fs-1 d-block mb-2 opacity-25"></i>Aucun parent enregistré.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}<div class="card-footer bg-transparent">{% include 'partials/pagination.html' %}</div>{% endif %}
+</div>
+{% endblock %}

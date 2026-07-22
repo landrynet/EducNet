@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Élèves</h4>
+    <p class="text-muted small mb-0">{{ page_obj.paginator.count }} élève(s)</p>
+  </div>
+  <a href="{% url 'students:create' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Nouvel élève</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Nom, prénom, matricule..." style="max-width:280px;" />
+      <select name="status" class="form-select form-select-sm" style="max-width:150px;">
+        <option value="">Tous</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Actifs</option>
+        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactifs</option>
+      </select>
+      <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+      {% if search or status %}<a href="{% url 'students:list' %}" class="btn btn-sm btn-outline-secondary">Effacer</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Élève</th>
+          <th>Matricule</th>
+          <th>Genre</th>
+          <th>Date de naissance</th>
+          <th>Téléphone</th>
+          <th>Statut</th>
+          <th class="text-end pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in page_obj %}
+        <tr>
+          <td class="ps-4">
+            <div class="d-flex align-items-center gap-2">
+              <div class="user-avatar-sm">{{ student.initials }}</div>
+              <div>
+                <div class="fw-semibold">{{ student.get_full_name }}</div>
+                <div class="text-muted small">{{ student.age }} ans</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge bg-light text-dark border font-monospace">{{ student.student_id }}</span></td>
+          <td>
+            {% if student.gender == 'M' %}
+            <span class="badge bg-info-subtle text-info"><i class="bi bi-gender-male me-1"></i>Masculin</span>
+            {% else %}
+            <span class="badge bg-pink-subtle" style="background:#fce4ec;color:#c2185b;"><i class="bi bi-gender-female me-1"></i>Féminin</span>
+            {% endif %}
+          </td>
+          <td class="text-muted small">{{ student.date_of_birth|date:"d/m/Y" }}</td>
+          <td class="text-muted small">{{ student.phone|default:"—" }}</td>
+          <td>
+            {% if student.is_active %}<span class="badge bg-success-subtle text-success rounded-pill">Actif</span>
+            {% else %}<span class="badge bg-secondary-subtle text-secondary rounded-pill">Inactif</span>{% endif %}
+          </td>
+          <td class="text-end pe-4">
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'students:detail' student.pk %}" class="btn btn-outline-secondary" title="Voir"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'students:edit' student.pk %}" class="btn btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="bi bi-person-vcard fs-1 d-block mb-2 opacity-25"></i>
+            Aucun élève trouvé.
+            <a href="{% url 'students:create' %}">Ajouter le premier</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer bg-transparent">{% include 'partials/pagination.html' %}</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0 fw-bold">Annonces</h4>
+    </div>
+    {% for announcement in page_obj %}
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <h6 class="fw-semibold mb-0">{{ announcement.title }}</h6>
+          <span class="badge {% if announcement.priority == 'urgent' %}bg-danger{% elif announcement.priority == 'high' %}bg-warning text-dark{% elif announcement.priority == 'medium' %}bg-info{% else %}bg-secondary{% endif %} ms-2 flex-shrink-0">
+            {{ announcement.get_priority_display }}
+          </span>
+        </div>
+        <p class="text-muted small mb-2">{{ announcement.content|truncatechars:200 }}</p>
+        <div class="d-flex align-items-center gap-3 small text-muted">
+          <span><i class="bi bi-person me-1"></i>{{ announcement.author.get_full_name }}</span>
+          <span><i class="bi bi-clock me-1"></i>{{ announcement.published_at|date:"d/m/Y H:i" }}</span>
+          <span><i class="bi bi-people me-1"></i>{{ announcement.get_target_audience_display }}</span>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-megaphone fs-1 d-block mb-2 opacity-25"></i>
+        <p>Aucune annonce publiée.</p>
+      </div>
+    </div>
+    {% endfor %}
+    {% if page_obj.has_other_pages %}{% include 'partials/pagination.html' %}{% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0"><h6 class="fw-semibold mb-0"><i class="bi bi-megaphone me-2 text-primary"></i>Nouvelle annonce</h6></div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form|crispy }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0 fw-bold">Transport scolaire</h4>
+</div>
+<div class="row g-4">
+  {% for route in routes %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="stat-card-icon stat-card-primary" style="width:40px;height:40px;border-radius:.5rem;"><i class="bi bi-bus-front"></i></div>
+          <h6 class="fw-bold mb-0">{{ route.name }}</h6>
+        </div>
+        <div class="small text-muted">
+          {% if route.driver_name %}<div><i class="bi bi-person-fill me-1"></i>{{ route.driver_name }}</div>{% endif %}
+          {% if route.vehicle_number %}<div><i class="bi bi-truck me-1"></i>{{ route.vehicle_number }}</div>{% endif %}
+          <div><i class="bi bi-people me-1"></i>{{ route.capacity }} places &bull; {{ route.fee|floatformat:0 }} FCFA/mois</div>
+        </div>
+      </div>
+      <div class="card-footer bg-transparent border-0">
+        <span class="badge {% if route.is_active %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">
+          {% if route.is_active %}Actif{% else %}Inactif{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12"><div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5 text-muted">
+      <i class="bi bi-bus-front fs-1 d-block mb-3 opacity-25"></i>
+      <h5>Aucun circuit de transport configuré</h5>
+    </div>
+  </div></div>
+  {% endfor %}
+</div>
+{% endblock %}

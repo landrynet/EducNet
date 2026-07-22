@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'students:list' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="mb-0 fw-bold">{{ student.get_full_name }}</h4>
+  <span class="badge bg-{% if student.is_active %}success{% else %}secondary{% endif %} ms-2">
+    {% if student.is_active %}Actif{% else %}Inactif{% endif %}
+  </span>
+  <div class="ms-auto">
+    <a href="{% url 'students:edit' student.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-pencil me-1"></i>Modifier</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm text-center">
+      <div class="card-body p-4">
+        {% if student.photo %}
+        <img src="{{ student.photo.url }}" class="rounded-circle mb-3" style="width:96px;height:96px;object-fit:cover;">
+        {% else %}
+        <div class="user-avatar-xl mx-auto mb-3">{{ student.initials }}</div>
+        {% endif %}
+        <h5 class="fw-bold">{{ student.get_full_name }}</h5>
+        <span class="badge bg-light text-dark border font-monospace mb-2">{{ student.student_id }}</span>
+        <div class="text-muted small">{{ student.age }} ans &bull; {{ student.get_gender_display }}</div>
+        <hr />
+        <div class="text-start small">
+          <div class="mb-2"><i class="bi bi-cake2 me-2 text-muted"></i>{{ student.date_of_birth|date:"d/m/Y" }}</div>
+          <div class="mb-2"><i class="bi bi-geo-alt me-2 text-muted"></i>{{ student.place_of_birth|default:"—" }}</div>
+          <div class="mb-2"><i class="bi bi-flag me-2 text-muted"></i>{{ student.nationality }}</div>
+          {% if student.phone %}<div class="mb-2"><i class="bi bi-telephone me-2 text-muted"></i>{{ student.phone }}</div>{% endif %}
+          {% if student.email %}<div class="mb-2"><i class="bi bi-envelope me-2 text-muted"></i>{{ student.email }}</div>{% endif %}
+          {% if student.address %}<div class="mb-2"><i class="bi bi-house me-2 text-muted"></i>{{ student.address }}</div>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent"><h6 class="fw-semibold mb-0"><i class="bi bi-mortarboard me-2 text-primary"></i>Parcours scolaire</h6></div>
+      <div class="card-body">
+        {% if student.previous_school %}<p class="mb-1 small"><strong>École précédente:</strong> {{ student.previous_school }}</p>{% endif %}
+        {% if student.medical_notes %}<p class="mb-0 small"><strong>Notes médicales:</strong> {{ student.medical_notes }}</p>{% endif %}
+        {% if not student.previous_school and not student.medical_notes %}<p class="text-muted small mb-0">Aucune information supplémentaire.</p>{% endif %}
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent"><h6 class="fw-semibold mb-0"><i class="bi bi-people me-2 text-primary"></i>Parents / Tuteurs</h6></div>
+      <div class="card-body">
+        {% if student.parents.all %}
+        {% for parent in student.parents.all %}
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <div class="user-avatar-sm">{{ parent.first_name|slice:":1" }}{{ parent.last_name|slice:":1" }}</div>
+          <div>
+            <div class="fw-semibold small">{{ parent.get_full_name }}</div>
+            <div class="text-muted small">{{ parent.get_relationship_display }} &bull; {{ parent.phone }}</div>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-muted small mb-0">Aucun parent/tuteur enregistré.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

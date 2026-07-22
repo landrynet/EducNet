@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="mb-0 fw-bold">Emplois du temps</h4>
+</div>
+
+{% if entries %}
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-bordered align-middle mb-0">
+      <thead class="table-light">
+        <tr><th>Heure</th><th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td colspan="6" class="text-center text-muted py-3">Emplois du temps disponibles</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body text-center py-5 text-muted">
+    <i class="bi bi-calendar-week fs-1 d-block mb-3 opacity-25"></i>
+    <h5>Aucun emploi du temps configuré</h5>
+    <p class="small">Les emplois du temps seront disponibles une fois les créneaux horaires et classes définis.</p>
+    <a href="{% url 'academic:index' %}" class="btn btn-outline-primary">Configurer les classes</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card stat-card-success">
+      <div class="stat-card-icon"><i class="bi bi-cash-coin"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Total encaissé</div>
+        <div class="stat-card-value">{{ stats.total_collected|floatformat:0 }}</div>
+        <div class="stat-card-sub">FCFA</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card stat-card-warning">
+      <div class="stat-card-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Paiements en attente</div>
+        <div class="stat-card-value">{{ stats.pending_payments }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-4">
+  {% for item in sidebar_menu %}{% if not forloop.first %}
+  <div class="col-6 col-md-3">
+    <a href="{% url item.url %}" class="module-tile module-tile-lg">
+      <i class="bi {{ item.icon }} module-tile-icon"></i>
+      <span class="module-tile-label">{{ item.label }}</span>
+    </a>
+  </div>
+  {% endif %}{% endfor %}
+</div>
+{% endblock %}

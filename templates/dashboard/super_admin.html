@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Stats row -->
+<div class="row g-4 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card stat-card-primary">
+      <div class="stat-card-icon"><i class="bi bi-building"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Total Écoles</div>
+        <div class="stat-card-value">{{ stats.total_schools }}</div>
+        <div class="stat-card-sub">{{ stats.active_schools }} actives</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card stat-card-success">
+      <div class="stat-card-icon"><i class="bi bi-people"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Total Utilisateurs</div>
+        <div class="stat-card-value">{{ stats.total_users }}</div>
+        <div class="stat-card-sub">{{ stats.active_users }} actifs</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card stat-card-info">
+      <div class="stat-card-icon"><i class="bi bi-activity"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Taux d'activité</div>
+        <div class="stat-card-value">
+          {% if stats.total_schools %}{{ stats.active_schools|default:0 }}{% else %}0{% endif %}
+          <small class="fs-6 fw-normal">/{{ stats.total_schools }}</small>
+        </div>
+        <div class="stat-card-sub">Établissements actifs</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card stat-card-warning">
+      <div class="stat-card-icon"><i class="bi bi-shield-check"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-label">Système</div>
+        <div class="stat-card-value text-success"><i class="bi bi-check-circle-fill fs-4"></i></div>
+        <div class="stat-card-sub">Opérationnel</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions + Recent Schools -->
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-0 pb-0">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-lightning-charge me-2 text-primary"></i>Actions rapides</h6>
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-2">
+          <a href="{% url 'schools:create' %}" class="btn btn-outline-primary text-start">
+            <i class="bi bi-building-add me-2"></i>Créer une école
+          </a>
+          <a href="{% url 'users:create' %}" class="btn btn-outline-success text-start">
+            <i class="bi bi-person-plus me-2"></i>Créer un utilisateur
+          </a>
+          <a href="{% url 'audit:list' %}" class="btn btn-outline-secondary text-start">
+            <i class="bi bi-shield-check me-2"></i>Journal d'audit
+          </a>
+          <a href="{% url 'backup:create' %}" class="btn btn-outline-warning text-start" onclick="return confirm('Créer une sauvegarde ?')">
+            <i class="bi bi-database-add me-2"></i>Sauvegarder la base
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pb-0">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-building me-2 text-primary"></i>Écoles récentes</h6>
+        <a href="{% url 'schools:list' %}" class="btn btn-sm btn-outline-primary">Voir tout</a>
+      </div>
+      <div class="card-body p-0">
+        {% if recent_schools %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light">
+              <tr>
+                <th class="ps-4">Établissement</th>
+                <th>Code</th>
+                <th>Ville</th>
+                <th>Statut</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for school in recent_schools %}
+              <tr>
+                <td class="ps-4 fw-medium">{{ school.name }}</td>
+                <td><span class="badge bg-light text-dark border">{{ school.code }}</span></td>
+                <td class="text-muted">{{ school.city }}</td>
+                <td>
+                  {% if school.is_active %}
+                  <span class="badge bg-success-subtle text-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'schools:detail' school.pk %}" class="btn btn-sm btn-ghost-primary px-2">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-building fs-1 d-block mb-2 opacity-25"></i>
+          <p class="mb-2">Aucune école enregistrée</p>
+          <a href="{% url 'schools:create' %}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus me-1"></i>Créer la première école
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

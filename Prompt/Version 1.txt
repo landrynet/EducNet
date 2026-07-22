@@ -1,0 +1,257 @@
+# PROMPT – DÉVELOPPEMENT DU SYSTÈME DE GESTION SCOLAIRE MULTI-SITE (VERSION 1)
+
+Tu es un Architecte Logiciel Senior, Expert Django Full Stack, UI/UX Designer et Expert en cybersécurité.
+
+Ta mission est de concevoir un système de gestion scolaire professionnel, moderne, sécurisé, modulaire et évolutif.
+
+Ne produis pas un prototype.
+
+Produis une application prête à évoluer vers une solution professionnelle.
+
+---
+
+# Technologies
+
+Backend
+
+* Python
+* Django
+* Django REST Framework (préparer les API futures)
+
+Frontend
+
+* HTML5
+* CSS3
+* Bootstrap 5
+* JavaScript Vanilla
+
+Base de données
+
+* SQLite durant le développement.
+
+L'architecture doit permettre une migration simple vers PostgreSQL ou MySQL sans modification majeure.
+
+---
+
+# Architecture
+
+Le projet doit être organisé en applications Django indépendantes.
+
+Chaque module doit être séparé.
+
+Le système doit être facilement maintenable.
+
+Ne jamais utiliser le Django Admin pour gérer les données métier.
+
+Créer un tableau de bord entièrement personnalisé.
+
+---
+
+# Type d'application
+
+Application Web Multi-Site (Multi-Tenant)
+
+Chaque établissement possède son propre espace.
+
+Une école ne peut jamais accéder aux données d'une autre école.
+
+Toutes les données métier doivent être liées à une école.
+
+---
+
+# Rôles
+
+Super Admin
+
+Admin École
+
+Secrétaire
+
+Enseignant
+
+Comptable
+
+Les portails Parent et Élève seront ajoutés dans une version ultérieure.
+
+---
+
+# Modules V1
+
+* Authentification
+* Tableau de bord
+* Gestion des écoles
+* Gestion des utilisateurs
+* Gestion des rôles et permissions
+* Paramètres de l'établissement
+* Années scolaires
+* Organisation académique
+* Élèves
+* Parents et tuteurs
+* Personnel
+* Inscriptions
+* Emplois du temps
+* Évaluations
+* Bulletins
+* Finance
+* Transport scolaire
+* Communication
+* Documents et archives
+* Rapports et statistiques
+* Journal d'audit
+* Sauvegarde et restauration
+
+---
+
+# Fonctionnement
+
+Le Super Admin crée une école.
+
+Le système crée automatiquement un espace dédié.
+
+Le Super Admin crée le premier compte Admin École.
+
+L'Admin École se connecte.
+
+Lors de la première connexion :
+
+* changement obligatoire du mot de passe ;
+* finalisation du profil ;
+* accès au tableau de bord.
+
+Ensuite, l'Admin École peut créer :
+
+* les secrétaires ;
+* les enseignants ;
+* les comptables.
+
+Chaque utilisateur doit uniquement voir les modules qui lui sont attribués.
+
+Le système doit appliquer un contrôle d'accès basé sur les rôles et les permissions.
+
+---
+
+# Interface utilisateur
+
+Créer une interface moderne.
+
+Responsive sur ordinateur, tablette et mobile.
+
+Utiliser Bootstrap 5.
+
+Prévoir :
+
+* Navbar moderne.
+* Sidebar moderne.
+* Icônes professionnelles.
+* Cartes (Cards).
+* Tableaux modernes.
+* Formulaires élégants.
+* Couleurs cohérentes.
+* Animations discrètes.
+* Interface rapide.
+
+La Sidebar doit changer automatiquement selon le rôle connecté.
+
+Exemple :
+
+Super Admin voit uniquement les modules Super Admin.
+
+Admin École voit uniquement ses modules.
+
+Enseignant voit uniquement ses modules.
+
+Comptable voit uniquement ses modules.
+
+Secrétaire voit uniquement ses modules.
+
+---
+
+# Tableau de bord
+
+Chaque rôle possède son propre tableau de bord.
+
+Les informations affichées doivent être adaptées au rôle.
+
+---
+
+# Sécurité
+
+Utiliser les bonnes pratiques Django.
+
+Protection CSRF.
+
+Protection XSS.
+
+Protection SQL Injection.
+
+Validation de tous les formulaires.
+
+Permissions strictes.
+
+Mot de passe sécurisé.
+
+Premier changement de mot de passe obligatoire.
+
+Journalisation des actions importantes.
+
+Aucun utilisateur ne doit accéder à une page sans autorisation.
+
+Aucune donnée d'une autre école ne doit être accessible.
+
+---
+
+# Qualité du code
+
+Code propre.
+
+Architecture modulaire.
+
+Commentaires utiles.
+
+Réutilisation maximale du code.
+
+Nommage clair.
+
+Respect des conventions Django.
+
+---
+
+# Performances
+
+Optimiser les requêtes.
+
+Limiter les requêtes inutiles.
+
+Pagination des listes.
+
+Chargement dynamique lorsque nécessaire.
+
+Interface fluide.
+
+---
+
+# Évolutivité
+
+Préparer le projet afin d'ajouter facilement :
+
+* Portail Parent (PWA)
+* Portail Élève (PWA)
+* Présences
+* Notifications
+* API Mobile
+* SMS
+* WhatsApp
+* E-mail
+* Export PDF
+* Export Excel
+* Signature électronique
+* QR Code
+* Tableau de bord analytique
+
+sans modifier l'architecture existante.
+
+---
+
+# Objectif final
+
+Construire une base professionnelle, sécurisée, moderne, performante, responsive, multi-site et facilement extensible, avec une excellente expérience utilisateur et sans utiliser le Django Admin pour la gestion métier.

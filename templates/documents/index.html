@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0 fw-bold">Documents & Archives</h4>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light"><tr><th class="ps-4">Titre</th><th>Catégorie</th><th>Élève</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            {% for doc in page_obj %}
+            <tr>
+              <td class="ps-4">
+                <div class="d-flex align-items-center gap-2">
+                  <i class="bi bi-file-earmark-text fs-5 text-primary"></i>
+                  <div>
+                    <div class="fw-semibold small">{{ doc.title }}</div>
+                    <div class="text-muted" style="font-size:.75rem;">{{ doc.description|truncatechars:50 }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="text-muted small">{{ doc.category|default:"—" }}</td>
+              <td class="text-muted small">{{ doc.student|default:"—" }}</td>
+              <td class="text-muted small">{{ doc.uploaded_at|date:"d/m/Y" }}</td>
+              <td><a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-primary" target="_blank"><i class="bi bi-download"></i></a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-folder fs-1 d-block mb-2 opacity-25"></i>Aucun document.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0"><h6 class="fw-semibold mb-0"><i class="bi bi-cloud-upload me-2 text-primary"></i>Ajouter un document</h6></div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}{{ form|crispy }}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

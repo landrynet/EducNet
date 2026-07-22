@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Utilisateurs</h4>
+    <p class="text-muted small mb-0">{{ page_obj.paginator.count }} utilisateur(s)</p>
+  </div>
+  <a href="{% url 'users:create' %}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i>Nouvel utilisateur</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent border-bottom">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Rechercher..." style="max-width:250px;" />
+      <select name="role" class="form-select form-select-sm" style="max-width:180px;">
+        <option value="">Tous les rôles</option>
+        {% for val, label in roles %}<option value="{{ val }}" {% if role_filter == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+      {% if search or role_filter %}<a href="{% url 'users:list' %}" class="btn btn-sm btn-outline-secondary">Effacer</a>{% endif %}
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th class="ps-4">Utilisateur</th>
+          <th>Email</th>
+          <th>Rôle</th>
+          {% if user.is_super_admin %}<th>École</th>{% endif %}
+          <th>Statut</th>
+          <th>Mot de passe</th>
+          <th class="text-end pe-4">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in page_obj %}
+        <tr>
+          <td class="ps-4">
+            <div class="d-flex align-items-center gap-2">
+              <div class="user-avatar-sm">{{ u.initials }}</div>
+              <div>
+                <div class="fw-semibold">{{ u.get_full_name }}</div>
+                <div class="text-muted small">{{ u.phone|default:"—" }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="text-muted small">{{ u.email }}</td>
+          <td>
+            <span class="badge
+              {% if u.role == 'super_admin' %}bg-danger-subtle text-danger
+              {% elif u.role == 'admin_ecole' %}bg-primary-subtle text-primary
+              {% elif u.role == 'enseignant' %}bg-success-subtle text-success
+              {% elif u.role == 'comptable' %}bg-warning-subtle text-warning
+              {% else %}bg-secondary-subtle text-secondary{% endif %}">
+              {{ u.get_role_display }}
+            </span>
+          </td>
+          {% if user.is_super_admin %}<td class="text-muted small">{{ u.school.name|default:"Super Admin" }}</td>{% endif %}
+          <td>
+            {% if u.is_active %}<span class="badge bg-success-subtle text-success rounded-pill">Actif</span>
+            {% else %}<span class="badge bg-secondary-subtle text-secondary rounded-pill">Inactif</span>{% endif %}
+          </td>
+          <td>
+            {% if u.must_change_password %}
+            <span class="badge bg-warning-subtle text-warning"><i class="bi bi-exclamation-triangle me-1"></i>À changer</span>
+            {% else %}
+            <span class="badge bg-success-subtle text-success"><i class="bi bi-check me-1"></i>OK</span>
+            {% endif %}
+          </td>
+          <td class="text-end pe-4">
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'users:edit' u.pk %}" class="btn btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'users:toggle' u.pk %}" class="btn btn-outline-{% if u.is_active %}danger{% else %}success{% endif %}"
+                 onclick="return confirm('{% if u.is_active %}Désactiver{% else %}Activer{% endif %} cet utilisateur ?')"
+                 title="{% if u.is_active %}Désactiver{% else %}Activer{% endif %}">
+                <i class="bi bi-{% if u.is_active %}pause-circle{% else %}play-circle{% endif %}"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-5 text-muted">
+            <i class="bi bi-people fs-1 d-block mb-2 opacity-25"></i>
+            Aucun utilisateur trouvé.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="card-footer bg-transparent">{% include 'partials/pagination.html' %}</div>
+  {% endif %}
+</div>
+{% endblock %}

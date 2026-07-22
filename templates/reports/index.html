@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Bulletins scolaires</h4>
+    <p class="text-muted small mb-0">{{ page_obj.paginator.count }} bulletin(s)</p>
+  </div>
+</div>
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr><th class="ps-4">Élève</th><th>Période</th><th>Moyenne</th><th>Rang</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        {% for rc in page_obj %}
+        <tr>
+          <td class="ps-4 fw-semibold">{{ rc.student.get_full_name }}</td>
+          <td class="text-muted">{{ rc.period }}</td>
+          <td class="fw-semibold">{{ rc.average|default:"—" }}</td>
+          <td class="text-muted">{{ rc.rank|default:"—" }}</td>
+          <td><span class="badge {% if rc.status == 'published' %}bg-success-subtle text-success{% elif rc.status == 'validated' %}bg-primary-subtle text-primary{% else %}bg-secondary-subtle text-secondary{% endif %}">{{ rc.get_status_display }}</span></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-file-text fs-1 d-block mb-2 opacity-25"></i>Aucun bulletin généré.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}<div class="card-footer bg-transparent">{% include 'partials/pagination.html' %}</div>{% endif %}
+</div>
+{% endblock %}
