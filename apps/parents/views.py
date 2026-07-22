@@ -38,7 +38,11 @@ def parent_create(request):
         form = ParentForm(request.POST, school=school)
         if form.is_valid():
             parent = form.save(commit=False)
-            parent.school = school
+            selected_children = form.cleaned_data.get('children')
+            parent.school = school or (selected_children.first().school if selected_children else None)
+            if parent.school is None:
+                form.add_error('children', "Sélectionnez au moins un élève pour déterminer l'établissement.")
+                return render(request, 'parents/form.html', {'form': form, 'title': 'Nouveau parent / tuteur'})
             parent.save()
             form.save_m2m()
             log_action(request.user, 'CREATE', f"Parent créé: {parent.get_full_name()}", parent)

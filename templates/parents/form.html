@@ -9,8 +9,41 @@
 <div class="row"><div class="col-lg-8">
   <div class="card border-0 shadow-sm">
     <div class="card-body p-4">
-      <form method="post">{% csrf_token %}{{ form|crispy }}</form>
+      <form method="post">
+        {% csrf_token %}
+        <div class="alert alert-info py-2 small">
+          Recherchez un ou plusieurs élèves par nom, prénom ou matricule, puis confirmez avec le bouton Enregistrer.
+        </div>
+        <div class="mb-3">
+          <label for="childrenSearch" class="form-label">Rechercher un élève à associer</label>
+          <input id="childrenSearch" type="search" class="form-control" placeholder="Nom, prénom ou matricule..." autocomplete="off">
+        </div>
+        {{ form|crispy }}
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Enregistrer</button>
+          <a href="{% url 'parents:list' %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+      </form>
     </div>
   </div>
 </div></div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+(function () {
+  const search = document.getElementById('childrenSearch');
+  const select = document.getElementById('id_children');
+  if (!search || !select) return;
+  const options = Array.from(select.options);
+  search.addEventListener('input', function () {
+    const query = this.value.trim().toLocaleLowerCase();
+    options.forEach(function (option) {
+      const visible = !query || option.text.toLocaleLowerCase().includes(query);
+      option.hidden = !visible;
+    });
+  });
+})();
+</script>
 {% endblock %}

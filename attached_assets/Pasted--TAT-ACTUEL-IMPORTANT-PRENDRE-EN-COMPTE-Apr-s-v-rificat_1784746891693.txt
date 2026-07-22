@@ -1,0 +1,206 @@
+# ⚠️ ÉTAT ACTUEL IMPORTANT À PRENDRE EN COMPTE
+
+Après vérification, plusieurs fonctionnalités demandées dans la V1.2 ne sont toujours pas disponibles ou ne sont pas encore complètement fonctionnelles.
+
+Tu dois donc accorder une priorité particulière aux éléments suivants :
+
+## 1. Bouton Enregistrer
+
+Plusieurs formulaires ne disposent toujours pas d'un bouton clair et fonctionnel permettant d'enregistrer les données.
+
+Vérifier tous les formulaires concernés.
+
+Le bouton :
+
+`Enregistrer`
+
+doit être présent lorsque cela est nécessaire et doit réellement sauvegarder les données.
+
+Vérifier également :
+
+* Création.
+* Ajout.
+* Modification.
+* Mise à jour.
+
+---
+
+## 2. Recherche dynamique
+
+La recherche dynamique n'est toujours pas correctement disponible dans plusieurs parties du système.
+
+Elle doit être ajoutée ou corrigée là où elle est nécessaire.
+
+La recherche doit notamment permettre de rechercher par :
+
+* Nom.
+* Prénom.
+* Matricule.
+* Autres identifiants pertinents selon le module.
+
+Les résultats doivent se mettre à jour correctement et rapidement.
+
+---
+
+## 3. Filtres dynamiques
+
+Les filtres dynamiques ne sont toujours pas complètement disponibles.
+
+Vérifier et corriger les filtres dans les modules concernés.
+
+Les filtres doivent fonctionner correctement selon les données disponibles.
+
+Exemples :
+
+* Filtre par nom.
+* Filtre par statut.
+* Filtre par classe.
+* Filtre par rôle.
+* Filtre par date.
+
+---
+
+## 4. Recherche par nom
+
+La recherche par nom doit être disponible et fonctionnelle dans les modules où elle est nécessaire.
+
+Elle doit permettre de retrouver rapidement :
+
+* Un élève.
+* Un parent.
+* Un tuteur.
+* Un utilisateur.
+* Toute autre personne concernée.
+
+---
+
+## 5. Association d'un parent avec un ou plusieurs élèves
+
+La fonctionnalité d'association Parent/Tuteur – Élève n'est toujours pas disponible ou n'est pas complète.
+
+Elle doit être implémentée correctement.
+
+Un parent ou tuteur peut être associé à :
+
+* Un seul élève.
+* Ou plusieurs élèves.
+
+Exemple :
+
+```text
+Parent/Tuteur
+      │
+      ├── Élève 1
+      ├── Élève 2
+      └── Élève 3
+```
+
+Cette relation doit être possible lorsque plusieurs enfants appartiennent au même parent ou tuteur.
+
+---
+
+## 6. Règle importante concernant l'enfant
+
+Un même enfant doit avoir un seul tuteur principal selon la règle définie.
+
+Donc :
+
+```text
+Parent/Tuteur
+      │
+      ├── Enfant A
+      ├── Enfant B
+      └── Enfant C
+```
+
+est autorisé.
+
+Mais :
+
+```text
+Enfant A
+   ├── Tuteur principal 1
+   └── Tuteur principal 2
+```
+
+ne doit pas être autorisé simultanément.
+
+Le système doit contrôler cette règle.
+
+---
+
+## 7. Rechercher avant d'associer
+
+L'association doit fonctionner avec une recherche dynamique.
+
+### Étape 1
+
+Rechercher le parent ou tuteur :
+
+* Nom.
+* Prénom.
+* Identifiant approprié.
+
+### Étape 2
+
+Sélectionner le parent ou tuteur.
+
+### Étape 3
+
+Rechercher un ou plusieurs élèves :
+
+* Nom.
+* Prénom.
+* Matricule.
+
+### Étape 4
+
+Sélectionner un ou plusieurs élèves.
+
+### Étape 5
+
+Confirmer l'association.
+
+### Étape 6
+
+Cliquer sur :
+
+`Enregistrer`
+
+Les relations doivent ensuite être réellement sauvegardées dans la base de données.
+
+---
+
+# PRIORITÉ ABSOLUE
+
+Ces fonctionnalités sont actuellement manquantes ou incomplètes et doivent être terminées avant de considérer la V1.2 comme finalisée :
+
+* Bouton Enregistrer.
+* Recherche dynamique.
+* Filtres dynamiques.
+* Recherche par nom.
+* Recherche par prénom.
+* Recherche par matricule.
+* Association d'un parent avec un ou plusieurs élèves.
+* Règle d'un seul tuteur principal par enfant.
+* Enregistrement réel des associations.
+
+Ne pas simplement créer l'interface visuelle.
+
+Toutes ces fonctionnalités doivent être réellement fonctionnelles de bout en bout :
+
+```text
+Recherche
+    ↓
+Sélection
+    ↓
+Association
+    ↓
+Enregistrement
+    ↓
+Sauvegarde en base de données
+    ↓
+Affichage des données enregistrées
+```
+
+Tester réellement chaque fonctionnalité avant de considérer la tâche comme terminée.

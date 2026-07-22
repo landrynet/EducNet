@@ -28,6 +28,15 @@ class ParentForm(forms.ModelForm):
         children = self.cleaned_data.get('children')
         if not children:
             return children
+        school_ids = {child.school_id for child in children}
+        if len(school_ids) > 1:
+            raise forms.ValidationError(
+                "Les élèves associés doivent appartenir au même établissement."
+            )
+        if self.instance.pk and self.instance.school_id not in school_ids:
+            raise forms.ValidationError(
+                "Un parent ne peut être associé qu'aux élèves de son établissement."
+            )
         for child in children:
             existing = child.parents.filter(is_active=True).exclude(pk=self.instance.pk if self.instance.pk else None)
             if existing.exists():
