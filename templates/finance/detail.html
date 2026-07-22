@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'finance:index' %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
+  <h4 class="mb-0 fw-bold">Détails du paiement</h4>
+</div>
+<div class="card border-0 shadow-sm" style="max-width:720px;">
+  <div class="card-body p-4">
+    <dl class="row mb-0">
+      <dt class="col-sm-4">Élève</dt><dd class="col-sm-8">{{ payment.student.get_full_name }} ({{ payment.student.student_id }})</dd>
+      <dt class="col-sm-4">Type de frais</dt><dd class="col-sm-8">{{ payment.fee_type }}</dd>
+      <dt class="col-sm-4">Montant payé</dt><dd class="col-sm-8">{{ payment.amount|floatformat:0 }} FCFA</dd>
+      <dt class="col-sm-4">Montant dû</dt><dd class="col-sm-8">{{ payment.amount_due|floatformat:0 }} FCFA</dd>
+      <dt class="col-sm-4">Date</dt><dd class="col-sm-8">{{ payment.payment_date|date:"d/m/Y" }}</dd>
+      <dt class="col-sm-4">Mode</dt><dd class="col-sm-8">{{ payment.get_method_display }}</dd>
+      <dt class="col-sm-4">Référence</dt><dd class="col-sm-8">{{ payment.reference|default:"—" }}</dd>
+      <dt class="col-sm-4">Enregistré par</dt><dd class="col-sm-8">{{ payment.received_by.get_full_name|default:"—" }}</dd>
+      <dt class="col-sm-4">Notes</dt><dd class="col-sm-8">{{ payment.notes|default:"—" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

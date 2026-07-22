@@ -16,7 +16,8 @@ from apps.audit.utils import log_action
 def user_list(request):
     """List users scoped to current school or all for super admin."""
     if request.user.is_super_admin:
-        users = User.objects.select_related('school').all()
+        # Platform support needs school contacts, not every personal account.
+        users = User.objects.select_related('school').filter(role='admin_ecole')
     else:
         users = User.objects.filter(school=request.user.school)
 

@@ -1,0 +1,414 @@
+# PROMPT – Système de Gestion Scolaire Multi-Site V1.2
+
+## Finalisation, Corrections UX, Permissions et Validation de la V1
+
+La V1.1 est terminée.
+
+La Version 1.2 doit être une phase de finalisation de la V1.
+
+L'objectif principal est de corriger les problèmes restants, d'améliorer l'expérience utilisateur, de corriger les permissions et de rendre les fonctionnalités existantes complètement opérationnelles.
+
+⚠️ Ne pas commencer la V2.
+
+La V1.2 doit d'abord permettre de valider définitivement la V1 avant d'ajouter de nouveaux modules ou de nouvelles fonctionnalités majeures.
+
+---
+
+# 1. RÈGLE PRINCIPALE : ANALYSER AVANT DE MODIFIER
+
+Avant toute modification :
+
+1. Analyser le code existant.
+2. Vérifier les fonctionnalités déjà développées.
+3. Vérifier les permissions de chaque rôle.
+4. Vérifier les formulaires.
+5. Vérifier les boutons d'action.
+6. Vérifier les recherches.
+7. Vérifier les filtres.
+8. Vérifier les relations entre les données.
+9. Vérifier les erreurs existantes.
+
+Ne pas casser les fonctionnalités déjà fonctionnelles.
+
+La stabilité de la V1 est prioritaire.
+
+---
+
+# 2. PROBLÈME CRITIQUE : ENREGISTREMENT DES FORMULAIRES
+
+Dans plusieurs formulaires, l'utilisateur peut remplir les champs mais il n'existe pas toujours de bouton clair permettant d'enregistrer les informations.
+
+Vérifier tous les formulaires de l'application.
+
+Chaque formulaire qui permet de créer ou modifier des informations doit avoir une action claire :
+
+* Enregistrer.
+* Créer.
+* Ajouter.
+* Modifier.
+* Mettre à jour.
+
+Le bouton doit :
+
+* Être clairement visible.
+* Être facilement identifiable.
+* Fonctionner correctement.
+* Afficher un état de chargement si nécessaire.
+* Afficher un message de succès après l'enregistrement.
+* Afficher un message d'erreur en cas d'échec.
+
+Vérifier qu'aucun formulaire important ne peut être rempli sans possibilité claire de sauvegarder les données.
+
+---
+
+# 3. SUPER ADMIN : VISIBILITÉ DES UTILISATEURS
+
+Le Super Admin ne doit pas voir tous les utilisateurs détaillés de toutes les écoles dans une liste globale.
+
+Le Super Admin doit principalement voir les utilisateurs responsables des établissements, par exemple :
+
+* L'administrateur de l'école.
+* Les informations de contact de l'école.
+* Le responsable de l'établissement.
+
+L'objectif est de permettre au Super Admin de contacter l'établissement pour :
+
+* Support.
+* Maintenance.
+* Communication.
+* Assistance technique.
+* Gestion administrative de la plateforme.
+
+Le Super Admin ne doit pas voir inutilement toutes les informations personnelles des utilisateurs de chaque école.
+
+---
+
+# 4. INFORMATIONS DE CONTACT DE L'ÉCOLE
+
+Pour chaque école, prévoir une section permettant de consulter les informations de contact liées à l'établissement.
+
+Ces informations ne sont pas les informations de connexion.
+
+Il s'agit d'informations de contact et d'identification de l'école, par exemple :
+
+* Nom de l'établissement.
+* Nom du responsable.
+* Numéro de téléphone.
+* Adresse e-mail.
+* Adresse de l'établissement.
+* Autres informations utiles pour le contact et la maintenance.
+
+Ces informations doivent être clairement séparées des identifiants de connexion.
+
+Elles doivent servir à la communication entre le Super Admin et l'établissement.
+
+---
+
+# 5. AJOUTER UN BOUTON « DÉTAILS »
+
+Dans les listes et tableaux importants, ajouter un bouton ou une action « Détails ».
+
+Ce bouton doit permettre de consulter les informations complètes de l'élément sélectionné.
+
+Exemples :
+
+* Détails d'une école.
+* Détails d'un élève.
+* Détails d'un utilisateur.
+* Détails d'un paiement.
+* Détails d'un parent ou tuteur.
+
+Le bouton Détails doit être facilement accessible et cohérent dans toute l'application.
+
+---
+
+# 6. PERMISSIONS DE L'ADMINISTRATEUR D'ÉCOLE
+
+L'Administrateur d'École ne doit pas créer ni gérer les finances.
+
+Il doit uniquement pouvoir consulter les informations financières qui concernent son établissement, selon les permissions prévues.
+
+Donc :
+
+* Pas de création de finance.
+* Pas de création de paiement si cela ne relève pas de son rôle.
+* Pas de modification de données financières non autorisées.
+* Accès uniquement en consultation aux informations financières autorisées.
+
+L'Administrateur d'École doit également pouvoir consulter les informations liées aux évaluations, selon les permissions prévues par le système.
+
+Vérifier que ses permissions correspondent exactement à son rôle.
+
+---
+
+# 7. SIDEBAR DYNAMIQUE SELON LE RÔLE
+
+Pour chaque rôle, afficher uniquement les modules et fonctionnalités qui lui sont réellement accessibles.
+
+Si un module ne concerne pas un rôle :
+
+* Ne pas l'afficher dans la sidebar.
+* Ne pas l'afficher dans les menus.
+* Ne pas afficher de liens inutiles.
+* Protéger également les URLs directement.
+
+La sidebar doit être dynamique selon :
+
+* Le rôle.
+* Les permissions.
+* L'établissement de l'utilisateur.
+
+Exemple :
+
+Si un rôle n'a pas accès à la Finance :
+
+* Le module Finance ne doit pas apparaître dans sa sidebar.
+
+Si un rôle n'a pas accès aux Évaluations :
+
+* Le module Évaluations ne doit pas apparaître dans sa sidebar.
+
+⚠️ La suppression du menu ne suffit pas.
+
+Les routes doivent également être protégées côté serveur.
+
+---
+
+# 8. AMÉLIORATION DE LA RECHERCHE DES PAIEMENTS
+
+Dans le module Paiements, ne pas obliger l'utilisateur à chercher uniquement par nom de l'élève.
+
+Mettre en place une recherche flexible.
+
+La recherche doit permettre de rechercher un élève par exemple par :
+
+* Nom.
+* Prénom.
+* Matricule.
+* Identifiant approprié.
+
+Créer un champ de recherche clair.
+
+La recherche doit fonctionner de manière dynamique.
+
+L'utilisateur doit pouvoir trouver rapidement l'élève concerné avant d'enregistrer le paiement.
+
+---
+
+# 9. DATE DE PAIEMENT AUTOMATIQUE
+
+Le champ :
+
+`Date de paiement*`
+
+doit être automatiquement rempli avec la date actuelle.
+
+L'utilisateur ne devrait pas avoir besoin de saisir manuellement la date dans le cas normal.
+
+La date doit être générée automatiquement au moment de l'enregistrement du paiement.
+
+Important :
+
+La date officielle du paiement doit être contrôlée côté serveur afin d'éviter les incohérences.
+
+---
+
+# 10. RECHERCHE ET FILTRES DYNAMIQUES
+
+Dans l'ensemble du système, améliorer les recherches et les filtres.
+
+Les recherches et filtres doivent être dynamiques lorsque cela est pertinent.
+
+Exemples :
+
+* Recherche instantanée.
+* Filtrage par nom.
+* Filtrage par matricule.
+* Filtrage par statut.
+* Filtrage par classe.
+* Filtrage par date.
+* Filtrage par rôle.
+
+Lorsqu'un utilisateur utilise un filtre, les résultats doivent se mettre à jour correctement.
+
+Les filtres doivent être adaptés à chaque module.
+
+Ne pas afficher des filtres inutiles pour un rôle ou une page donnée.
+
+---
+
+# 11. ASSOCIATION PARENT / TUTEUR ET ENFANT
+
+Améliorer le système d'association entre les parents ou tuteurs et les élèves.
+
+La recherche doit fonctionner selon la même logique que la recherche des élèves dans les paiements.
+
+L'utilisateur doit pouvoir rechercher un élève par :
+
+* Nom.
+* Prénom.
+* Matricule.
+
+L'utilisateur doit ensuite pouvoir rechercher un parent ou tuteur.
+
+La recherche du parent ou tuteur doit également être dynamique.
+
+---
+
+# 12. RÈGLE D'ASSOCIATION DES ENFANTS
+
+Un enfant doit être associé à un seul tuteur principal dans le système.
+
+Règle :
+
+> Un élève = un seul tuteur principal.
+
+Lors de l'association :
+
+1. Rechercher l'élève.
+2. Sélectionner l'élève.
+3. Rechercher le parent ou tuteur.
+4. Sélectionner le parent ou tuteur.
+5. Confirmer l'association.
+6. Enregistrer la relation.
+
+Le système doit empêcher les associations incohérentes.
+
+Si un élève est déjà associé à un tuteur principal :
+
+* Afficher clairement cette information.
+* Empêcher une association incorrecte.
+* Permettre la modification ou le remplacement du tuteur selon les permissions.
+
+---
+
+# 13. BOUTONS ET ACTIONS
+
+Vérifier tous les boutons de l'application.
+
+Chaque action doit être claire.
+
+Vérifier notamment :
+
+* Enregistrer.
+* Ajouter.
+* Modifier.
+* Supprimer.
+* Détails.
+* Annuler.
+* Retour.
+* Confirmer.
+
+Aucun bouton ne doit :
+
+* Être inutile.
+* Ne rien faire.
+* Mener vers une page inexistante.
+* Être mal placé.
+* Être invisible sur une page importante.
+
+---
+
+# 14. VALIDATION DE LA V1.2
+
+Avant de considérer la V1.2 comme terminée, tester le système avec :
+
+* Plusieurs écoles.
+* Plusieurs utilisateurs.
+* Plusieurs rôles.
+* Plusieurs élèves.
+* Plusieurs parents ou tuteurs.
+* Plusieurs paiements.
+
+Tester notamment :
+
+## Super Admin
+
+Vérifier :
+
+* Les informations visibles.
+* Les écoles.
+* Les contacts.
+* Les détails.
+* Les permissions.
+
+## Admin École
+
+Vérifier :
+
+* Les informations de son école.
+* Les accès en consultation.
+* Les finances.
+* Les évaluations.
+* Les restrictions de création.
+
+## Autres rôles
+
+Vérifier que chaque rôle :
+
+* Voit uniquement ses modules.
+* Ne voit pas les modules non appropriés.
+* Ne peut pas accéder aux URLs interdites.
+
+## Paiements
+
+Vérifier :
+
+* Recherche par nom.
+* Recherche par prénom.
+* Recherche par matricule.
+* Date automatique.
+* Enregistrement.
+* Affichage des détails.
+
+## Parents / Tuteurs
+
+Vérifier :
+
+* Recherche de l'élève.
+* Recherche du tuteur.
+* Association.
+* Un seul tuteur principal par enfant.
+* Modification de l'association selon les permissions.
+
+---
+
+# 15. OBJECTIF FINAL
+
+Cette V1.2 doit servir à finaliser et valider complètement la V1.
+
+Ne pas commencer la V2 tant que :
+
+* Les formulaires ne sont pas complètement fonctionnels.
+* Les boutons d'enregistrement ne sont pas présents et fonctionnels.
+* Les permissions ne sont pas correctement appliquées.
+* La sidebar n'est pas adaptée aux rôles.
+* Les recherches ne sont pas suffisamment flexibles.
+* Les filtres ne fonctionnent pas correctement.
+* Les relations parent/enfant ne sont pas correctement contrôlées.
+* Les paiements ne sont pas correctement enregistrés.
+* Des bugs importants existent encore.
+* Des régressions existent.
+
+---
+
+# RÈGLE FINALE
+
+La V1 doit devenir une base stable, cohérente et entièrement fonctionnelle.
+
+La V1.2 ne doit pas introduire de nouveaux modules majeurs.
+
+Elle doit principalement :
+
+1. Corriger les problèmes existants.
+2. Améliorer les fonctionnalités existantes.
+3. Corriger les permissions.
+4. Améliorer les recherches.
+5. Améliorer les filtres.
+6. Corriger les formulaires.
+7. Améliorer les relations entre les données.
+8. Améliorer l'expérience utilisateur.
+9. Tester l'ensemble du système.
+10. Valider définitivement la V1.
+
+Une fois cette validation terminée, seulement alors, passer au développement de la V2.

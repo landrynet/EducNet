@@ -23,3 +23,17 @@ class ParentForm(forms.ModelForm):
             'email', 'address', 'children',
             Submit('submit', 'Enregistrer', css_class='btn btn-primary'),
         )
+
+    def clean_children(self):
+        children = self.cleaned_data.get('children')
+        if not children:
+            return children
+        for child in children:
+            existing = child.parents.filter(is_active=True).exclude(pk=self.instance.pk if self.instance.pk else None)
+            if existing.exists():
+                names = ', '.join(parent.get_full_name() for parent in existing[:2])
+                raise forms.ValidationError(
+                    f"{child.get_full_name()} est déjà associé à un tuteur principal ({names}). "
+                    "Modifiez d'abord l'association existante."
+                )
+        return children

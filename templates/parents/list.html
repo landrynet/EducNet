@@ -11,7 +11,7 @@
 <div class="card border-0 shadow-sm">
   <div class="card-header bg-transparent border-bottom">
     <form method="get" class="d-flex gap-2">
-      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Rechercher..." style="max-width:280px;" />
+      <input type="search" name="q" value="{{ search }}" class="form-control form-control-sm" placeholder="Parent, téléphone, élève ou matricule..." style="max-width:360px;" />
       <button class="btn btn-sm btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
   </div>
@@ -33,7 +33,7 @@
             {% for child in parent.children.all %}<span class="badge bg-primary-subtle text-primary me-1">{{ child.get_full_name }}</span>{% empty %}<span class="text-muted small">—</span>{% endfor %}
           </td>
           <td class="text-end pe-4">
-            <a href="{% url 'parents:edit' parent.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'parents:edit' parent.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Modifier</a>
           </td>
         </tr>
         {% empty %}

@@ -16,7 +16,15 @@ def parent_list(request):
     parents = Parent.objects.filter(school=school).prefetch_related('children') if school else Parent.objects.all()
     search = request.GET.get('q', '')
     if search:
-        parents = parents.filter(Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(phone__icontains=search))
+        parents = parents.filter(
+            Q(first_name__icontains=search)
+            | Q(last_name__icontains=search)
+            | Q(phone__icontains=search)
+            | Q(email__icontains=search)
+            | Q(children__first_name__icontains=search)
+            | Q(children__last_name__icontains=search)
+            | Q(children__student_id__icontains=search)
+        ).distinct()
     paginator = Paginator(parents, 20)
     page = paginator.get_page(request.GET.get('page'))
     return render(request, 'parents/list.html', {'page_obj': page, 'search': search, 'title': 'Parents & Tuteurs'})
