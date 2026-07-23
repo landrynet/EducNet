@@ -18,6 +18,13 @@ set -e
 
 cd "$(dirname "$0")"
 
+# ── Mise à jour depuis GitHub ─────────────────────────────────
+
+if git remote get-url origin &>/dev/null; then
+    echo -e "\033[0;34m[EduManager]\033[0m Récupération des mises à jour (git pull origin main)..."
+    git pull origin main || echo -e "\033[1;33m[!]\033[0m git pull a échoué (réseau indisponible ?). Démarrage avec la version locale."
+fi
+
 # ── Configuration ─────────────────────────────────────────────
 
 PORT=${PORT:-8000}
