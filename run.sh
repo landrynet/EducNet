@@ -211,8 +211,9 @@ if ! python manage.py migrate --run-syncdb --fake-initial; then
     # pas toujours détecter automatiquement une migration initiale partielle.
     # On ne marque la migration comme appliquée que si ses trois tables sont
     # déjà présentes : aucune donnée n'est supprimée ni recréée.
-    LEGACY_TIMETABLE_SCHEMA=$(python manage.py shell -c "
+    if python manage.py shell -c "
 from django.db import connection
+import sys
 
 required = {
     'timetable_timeslot',
@@ -221,10 +222,12 @@ required = {
 }
 with connection.cursor() as cursor:
     tables = set(connection.introspection.table_names(cursor))
-print('ready' if required.issubset(tables) else 'incomplete')
-" | tail -n 1)
-
-    if [ "$LEGACY_TIMETABLE_SCHEMA" = "ready" ]; then
+missing = sorted(required - tables)
+if missing:
+    print('Tables timetable manquantes : ' + ', '.join(missing))
+    sys.exit(1)
+print('Tables timetable existantes : ' + ', '.join(sorted(required)))
+"; then
 
         warn "Tables timetable détectées. Marquage de timetable.0001 comme appliquée..."
         python manage.py migrate timetable 0001 --fake
