@@ -7,8 +7,17 @@
     <i class="bi bi-calendar-week me-2 text-primary"></i>Emplois du temps
   </h4>
   {% if can_manage %}
-  <a href="{% url 'timetable:schedule_config' %}" class="btn btn-outline-primary btn-sm">
-    <i class="bi bi-clock me-1"></i>Configurer les horaires
+  <div class="d-flex gap-2">
+    <a href="{% url 'timetable:global' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-columns-gap me-1"></i>Vue globale
+    </a>
+    <a href="{% url 'timetable:schedule_config' %}" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-clock me-1"></i>Configurer les horaires
+    </a>
+  </div>
+  {% else %}
+  <a href="{% url 'timetable:global' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-columns-gap me-1"></i>Vue globale
   </a>
   {% endif %}
 </div>
@@ -62,6 +71,10 @@
             <a href="{% url 'timetable:print_classroom' item.classroom.pk %}"
                class="btn btn-sm btn-outline-secondary" target="_blank" title="Imprimer">
               <i class="bi bi-printer"></i>
+            </a>
+            <a href="{% url 'timetable:classroom_pdf' item.classroom.pk %}"
+               class="btn btn-sm btn-outline-secondary" title="Télécharger PDF">
+              <i class="bi bi-file-earmark-pdf"></i>
             </a>
             {% endif %}
           </div>

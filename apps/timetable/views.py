@@ -1,16 +1,18 @@
 """Timetable module views."""
 
 import json
+from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 
 from apps.authentication.decorators import role_required
 from apps.audit.utils import log_action
 from apps.academic.models import Classroom, Subject
+from apps.staff.models import StaffProfile
 from apps.users.models import User, Role
 
 from .models import TimeSlot, TimetableSchedule, TimetableEntry, SchoolConfig, DAYS
@@ -66,6 +68,19 @@ def _check_conflicts(school, classroom, day, timeslot, teacher_id=None, room='',
             )
 
     return conflicts
+
+
+def _teacher_teaches_subject(teacher, subject, school):
+    """Require the teacher's school profile to include the selected subject."""
+    if not teacher or teacher.school_id != school.pk:
+        return False
+    try:
+        profile = teacher.staff_profile
+    except StaffProfile.DoesNotExist:
+        return False
+    return profile.school_id == school.pk and profile.subjects.filter(
+        pk=subject.pk, school=school
+    ).exists()
 
 
 def _build_grid(school, classroom, timeslots, days_list, entries_qs=None):
@@ -127,6 +142,88 @@ def _published_classroom_ids(school):
     )
 
 
+def _parse_day(value):
+    """Return a valid timetable day number or None."""
+    try:
+        day = int(value)
+    except (TypeError, ValueError):
+        return None
+    return day if day in dict(DAYS) else None
+
+
+def _pdf_response(title, headers, rows, filename):
+    """Build a compact landscape timetable PDF."""
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+
+    buffer = BytesIO()
+    document = SimpleDocTemplate(
+        buffer, pagesize=landscape(A4), rightMargin=10 * mm, leftMargin=10 * mm,
+        topMargin=10 * mm, bottomMargin=10 * mm, title=title,
+    )
+    styles = getSampleStyleSheet()
+    cell_style = ParagraphStyle('TimetableCell', parent=styles['BodyText'], fontSize=7, leading=9)
+    header_style = ParagraphStyle(
+        'TimetableHeader', parent=cell_style, fontName='Helvetica-Bold',
+        textColor=colors.white, alignment=1,
+    )
+    title_style = ParagraphStyle(
+        'TimetableTitle', parent=styles['Title'], fontSize=15, leading=18,
+        textColor=colors.HexColor('#0d6efd'),
+    )
+    table_data = [[Paragraph(str(value), header_style) for value in headers]]
+    spans = []
+    for row_index, row in enumerate(rows, start=1):
+        cells = [Paragraph(str(row[0]), cell_style)]
+        if row[1] == 'break':
+            cells.append(Paragraph(f"<b>Pause</b> — {row[2]}", cell_style))
+            cells.extend([''] * (len(headers) - 2))
+            spans.append(('SPAN', (1, row_index), (len(headers) - 1, row_index)))
+        else:
+            cells.extend(Paragraph(str(value), cell_style) for value in row[2:])
+        table_data.append(cells)
+
+    table = Table(table_data, colWidths=[27 * mm] + [None] * (len(headers) - 1), repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0d6efd')),
+        ('GRID', (0, 0), (-1, -1), 0.35, colors.HexColor('#ced4da')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('BACKGROUND', (0, 1), (0, -1), colors.HexColor('#f8f9fc')),
+        *spans,
+    ]))
+    document.build([Paragraph(title, title_style), Spacer(1, 5 * mm), table])
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+def _grid_pdf_rows(grid):
+    rows = []
+    for row in grid:
+        if row['slot'].is_break:
+            rows.append((row['slot'].time_range, 'break', row['slot'].name or 'Pause'))
+            continue
+        values = []
+        for cell in row['cells']:
+            entry = cell['entry']
+            if not entry:
+                values.append('Libre')
+                continue
+            value = f"<b>{entry.subject.name}</b>"
+            if entry.teacher:
+                value += f"<br/>{entry.teacher.get_full_name()}"
+            if entry.room:
+                value += f"<br/>{entry.room}"
+            if getattr(entry, 'classroom', None):
+                value += f"<br/>{entry.classroom.name}"
+            values.append(value)
+        rows.append((row['slot'].time_range, 'course', *values))
+    return rows
+
+
 # ── Main Index ──────────────────────────────────────────────────────────────
 
 @login_required
@@ -171,6 +268,44 @@ def index(request):
     })
 
 
+@login_required
+@role_required(['admin_ecole', 'secretaire', 'super_admin'])
+def global_timetable(request):
+    """Display all classroom timetables in one school-wide grid."""
+    school = _get_school(request)
+    timeslots = TimeSlot.objects.filter(school=school)
+    days = _get_working_days(school)
+    entries = TimetableEntry.objects.filter(
+        school=school,
+    ).select_related('classroom', 'subject', 'teacher', 'timeslot')
+    if request.user.role != Role.SECRETAIRE:
+        entries = entries.filter(
+            classroom_id__in=_published_classroom_ids(school)
+        )
+
+    entries_map = {}
+    for entry in entries:
+        entries_map.setdefault((entry.timeslot_id, entry.day), []).append(entry)
+
+    grid = []
+    for slot in timeslots:
+        row = {'slot': slot, 'cells': []}
+        for day_num, day_label in days:
+            row['cells'].append({
+                'day': day_num,
+                'day_label': day_label,
+                'entries': entries_map.get((slot.pk, day_num), []),
+            })
+        grid.append(row)
+
+    return render(request, 'timetable/global_timetable.html', {
+        'grid': grid,
+        'days': days,
+        'title': 'Emploi du temps global',
+        'school': school,
+    })
+
+
 # ── Schedule Configuration (Secretary only) ─────────────────────────────────
 
 @login_required
@@ -185,7 +320,10 @@ def schedule_config(request):
 
         if action == 'save_days':
             # Save working days configuration
-            selected_days = [int(d) for d in request.POST.getlist('working_days') if d.isdigit()]
+            selected_days = [
+                int(d) for d in request.POST.getlist('working_days')
+                if d.isdigit() and int(d) in dict(DAYS)
+            ]
             if not selected_days:
                 messages.error(request, "Sélectionnez au moins un jour de cours.")
             else:
@@ -196,7 +334,7 @@ def schedule_config(request):
             return redirect('timetable:schedule_config')
 
         # Default: add a timeslot
-        form = TimeSlotForm(request.POST)
+        form = TimeSlotForm(request.POST, school=school)
         if form.is_valid():
             slot = form.save(commit=False)
             slot.school = school
@@ -210,7 +348,7 @@ def schedule_config(request):
             messages.error(request, "Veuillez corriger les erreurs.")
     else:
         last_order = TimeSlot.objects.filter(school=school).count()
-        form = TimeSlotForm(initial={'order': last_order})
+        form = TimeSlotForm(initial={'order': last_order}, school=school)
 
     timeslots = TimeSlot.objects.filter(school=school)
     all_days = list(DAYS)
@@ -232,7 +370,7 @@ def timeslot_edit(request, pk):
     slot = get_object_or_404(TimeSlot, pk=pk, school=school)
 
     if request.method == 'POST':
-        form = TimeSlotForm(request.POST, instance=slot)
+        form = TimeSlotForm(request.POST, instance=slot, school=school)
         if form.is_valid():
             updated = form.save(commit=False)
             if not updated.name:
@@ -244,7 +382,7 @@ def timeslot_edit(request, pk):
         else:
             messages.error(request, "Veuillez corriger les erreurs.")
     else:
-        form = TimeSlotForm(instance=slot)
+        form = TimeSlotForm(instance=slot, school=school)
 
     return render(request, 'timetable/timeslot_form.html', {
         'form': form,
@@ -334,7 +472,7 @@ def entry_add(request, classroom_id):
     is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
     if request.method == 'POST':
-        day = request.POST.get('day')
+        day = _parse_day(request.POST.get('day'))
         timeslot_id = request.POST.get('timeslot_id')
         subject_id = request.POST.get('subject')
         teacher_id = request.POST.get('teacher') or None
@@ -342,7 +480,7 @@ def entry_add(request, classroom_id):
 
         errors = []
 
-        if not day or not timeslot_id or not subject_id:
+        if day is None or not timeslot_id or not subject_id:
             errors.append("Jour, créneau et matière sont obligatoires.")
 
         timeslot = None
@@ -353,6 +491,9 @@ def entry_add(request, classroom_id):
             timeslot = TimeSlot.objects.filter(pk=timeslot_id, school=school, slot_type='course').first()
             if not timeslot:
                 errors.append("Créneau invalide.")
+
+        if not errors and day not in {day_num for day_num, _ in _get_working_days(school)}:
+            errors.append("Ce jour n'est pas configuré comme jour de cours pour votre école.")
 
         if not errors:
             # --- Strict: subject must be assigned to this classroom ---
@@ -369,6 +510,8 @@ def entry_add(request, classroom_id):
                 ).first()
                 if not teacher:
                     errors.append("Cet enseignant n'appartient pas à votre école.")
+                elif not _teacher_teaches_subject(teacher, subject, school):
+                    errors.append("Cet enseignant n'est pas affecté à cette matière.")
 
         if not errors:
             # Class conflict (unique_together enforced at DB level, check first)
@@ -376,7 +519,7 @@ def entry_add(request, classroom_id):
                 errors.append("Cette classe a déjà un cours sur ce créneau.")
 
         if not errors:
-            conflicts = _check_conflicts(school, classroom, int(day), timeslot, teacher_id, room)
+            conflicts = _check_conflicts(school, classroom, day, timeslot, teacher_id, room)
             errors.extend(conflicts)
 
         if errors:
@@ -393,7 +536,7 @@ def entry_add(request, classroom_id):
             classroom=classroom,
             subject=subject,
             teacher=teacher,
-            day=int(day),
+            day=day,
             timeslot=timeslot,
             room=room,
         )
@@ -461,6 +604,8 @@ def entry_edit(request, pk):
             ).first()
             if not teacher_obj:
                 errors.append("Cet enseignant n'appartient pas à votre école.")
+            elif not _teacher_teaches_subject(teacher_obj, subject, school):
+                errors.append("Cet enseignant n'est pas affecté à cette matière.")
 
         if not errors:
             conflicts = _check_conflicts(
@@ -648,3 +793,57 @@ def print_classroom_timetable(request, classroom_id):
         'school': school,
         'title': f"Emploi du temps — {classroom.name}",
     })
+
+
+@login_required
+@role_required(['admin_ecole', 'secretaire', 'enseignant'])
+def teacher_timetable_pdf(request, teacher_id=None):
+    """Download a teacher timetable as a PDF."""
+    school = _get_school(request)
+    if request.user.role == Role.ENSEIGNANT:
+        teacher = request.user
+    else:
+        teacher = get_object_or_404(
+            User, pk=teacher_id, school=school, role=Role.ENSEIGNANT, is_active=True,
+        )
+
+    timeslots = TimeSlot.objects.filter(school=school)
+    days = _get_working_days(school)
+    published_ids = _published_classroom_ids(school)
+    grid = _build_teacher_grid(
+        school, teacher, timeslots, days,
+        classroom_ids=published_ids if request.user.role != Role.SECRETAIRE else None,
+    )
+    headers = ['Horaire'] + [label for _, label in days]
+    return _pdf_response(
+        f"Emploi du temps — {teacher.get_full_name()}",
+        headers,
+        _grid_pdf_rows(grid),
+        f"emploi-du-temps-{teacher.pk}.pdf",
+    )
+
+
+@login_required
+@role_required(['admin_ecole', 'secretaire'])
+def classroom_timetable_pdf(request, classroom_id):
+    """Download a classroom timetable as a PDF."""
+    school = _get_school(request)
+    classroom = get_object_or_404(Classroom, pk=classroom_id, school=school)
+    if request.user.role != Role.SECRETAIRE:
+        schedule = TimetableSchedule.objects.filter(
+            school=school, classroom=classroom, status='published',
+        ).first()
+        if schedule is None:
+            messages.warning(request, "Cet emploi du temps n'est pas encore publié.")
+            return redirect('timetable:index')
+
+    timeslots = TimeSlot.objects.filter(school=school)
+    days = _get_working_days(school)
+    grid = _build_grid(school, classroom, timeslots, days)
+    headers = ['Horaire'] + [label for _, label in days]
+    return _pdf_response(
+        f"Emploi du temps — {classroom.name}",
+        headers,
+        _grid_pdf_rows(grid),
+        f"emploi-du-temps-{classroom.pk}.pdf",
+    )

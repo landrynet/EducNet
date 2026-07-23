@@ -6,6 +6,7 @@ app_name = 'timetable'
 urlpatterns = [
     # Main hub
     path('', views.index, name='index'),
+    path('global/', views.global_timetable, name='global'),
 
     # Schedule configuration (Secretary only)
     path('config/', views.schedule_config, name='schedule_config'),
@@ -19,9 +20,11 @@ urlpatterns = [
     path('entry/<int:pk>/delete/', views.entry_delete, name='entry_delete'),
     path('classe/<int:classroom_id>/publish/', views.schedule_publish, name='schedule_publish'),
     path('classe/<int:classroom_id>/print/', views.print_classroom_timetable, name='print_classroom'),
+    path('classe/<int:classroom_id>/pdf/', views.classroom_timetable_pdf, name='classroom_pdf'),
 
     # Teacher timetable
     path('enseignant/', views.teacher_timetable, name='teacher_timetable'),
     path('enseignant/<int:teacher_id>/', views.teacher_timetable, name='teacher_timetable_by_id'),
     path('enseignant/<int:teacher_id>/print/', views.teacher_timetable, name='print_teacher'),
+    path('enseignant/<int:teacher_id>/pdf/', views.teacher_timetable_pdf, name='teacher_pdf'),
 ]

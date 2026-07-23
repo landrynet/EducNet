@@ -59,5 +59,6 @@ description: Key facts about the school management system — how to run it, wha
 - `ClassroomForm` requires `school=` kwarg for subject/year/level/teacher querysets.
 - `classroom_create` must call `form.save_m2m()` after `cls.save()` (commit=False pattern).
 - Timetable entry add/edit uses AJAX (X-Requested-With: XMLHttpRequest) returning JSON; non-AJAX falls back to redirect. `entry_add` is a POST-only view under `/timetable/classe/<id>/entry/add/`.
+- Timetable validation must enforce both configured working days and the teacher's assigned subjects; the seed script must preserve existing students and keep seeded teacher-subject relations valid when rerun.
 
 **Why:** Discovered during V1.1–V1.5 implementation and debugging.

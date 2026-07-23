@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+.global-grid { border-collapse: separate; border-spacing: 2px; }
+.global-grid th { background:#f8f9fc; font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; padding:.6rem .8rem; }
+.global-grid td { min-width:150px; vertical-align:top; padding:0; }
+.slot-label { background:#f8f9fc; font-size:.75rem; font-weight:600; color:#6c757d; padding:.6rem .75rem; white-space:nowrap; }
+.break-cell { background:#fff9e0; text-align:center; padding:.55rem; color:#856404; font-size:.75rem; font-weight:600; }
+.global-course { background:#fff; border:1px solid #e9ecef; border-left:3px solid #0d6efd; border-radius:6px; margin:3px; padding:.45rem .55rem; }
+.global-course-name { font-size:.78rem; font-weight:600; }
+.global-course-meta { color:#6c757d; font-size:.68rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div>
+    <h4 class="mb-1 fw-bold"><i class="bi bi-columns-gap me-2 text-primary"></i>Emploi du temps global</h4>
+    <div class="text-muted small">{{ school.name }} — toutes les classes publiées</div>
+  </div>
+  <a href="{% url 'timetable:index' %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left me-1"></i>Retour
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="global-grid w-100">
+      <thead>
+        <tr>
+          <th style="min-width:110px;">Horaire</th>
+          {% for day_num, day_label in days %}<th class="text-center">{{ day_label }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in grid %}
+        <tr>
+          <td class="slot-label">{{ row.slot.time_range }}<div class="fw-normal text-muted">{{ row.slot.name }}</div></td>
+          {% if row.slot.is_break %}
+          <td colspan="{{ days|length }}" class="break-cell"><i class="bi bi-cup-hot me-1"></i>{{ row.slot.name|default:"Pause" }}</td>
+          {% else %}
+          {% for cell in row.cells %}
+          <td>
+            {% for entry in cell.entries %}
+            <div class="global-course">
+              <div class="global-course-name">{{ entry.classroom.name }} — {{ entry.subject.name }}</div>
+              {% if entry.teacher %}<div class="global-course-meta"><i class="bi bi-person me-1"></i>{{ entry.teacher.get_full_name }}</div>{% endif %}
+              {% if entry.room %}<div class="global-course-meta"><i class="bi bi-geo me-1"></i>{{ entry.room }}</div>{% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-4 small">Libre</div>
+            {% endfor %}
+          </td>
+          {% endfor %}
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

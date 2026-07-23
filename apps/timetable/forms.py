@@ -23,12 +23,26 @@ class TimeSlotForm(forms.ModelForm):
             'order': 'Ordre',
         }
 
+    def __init__(self, *args, school=None, **kwargs):
+        self.school = school
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
         start = cleaned_data.get('start_time')
         end = cleaned_data.get('end_time')
         if start and end and end <= start:
             raise forms.ValidationError("L'heure de fin doit être après l'heure de début.")
+        if start and end and self.school:
+            overlap = TimeSlot.objects.filter(
+                school=self.school,
+                start_time__lt=end,
+                end_time__gt=start,
+            ).exclude(pk=self.instance.pk)
+            if overlap.exists():
+                raise forms.ValidationError(
+                    "Ce créneau chevauche déjà un créneau configuré pour votre école."
+                )
         return cleaned_data
 
 
