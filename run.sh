@@ -202,43 +202,80 @@ ok "Configuration Django valide."
 
 log "Application des migrations..."
 
-if ! python manage.py migrate --run-syncdb --fake-initial; then
+MIGRATION_LOG="${TMPDIR:-/tmp}/edumanager-migrate-${RANDOM}.log"
+
+if python manage.py migrate --run-syncdb --fake-initial >"$MIGRATION_LOG" 2>&1; then
+
+    cat "$MIGRATION_LOG"
+    rm -f "$MIGRATION_LOG"
+
+else
+
+    cat "$MIGRATION_LOG"
 
     warn "La migration standard a échoué. Vérification d'une ancienne base avec tables timetable existantes..."
 
-    # Certaines anciennes installations ont créé les tables du module
-    # timetable avant l'ajout de ses migrations. Dans ce cas, Django ne peut
-    # pas toujours détecter automatiquement une migration initiale partielle.
-    # On ne marque la migration comme appliquée que si ses trois tables sont
-    # déjà présentes : aucune donnée n'est supprimée ni recréée.
+    if ! grep -Fq 'table "timetable_timeslot" already exists' "$MIGRATION_LOG"; then
+        error "La migration a échoué pour une raison différente. Aucune réparation automatique effectuée."
+        rm -f "$MIGRATION_LOG"
+        exit 1
+    fi
+
+    rm -f "$MIGRATION_LOG"
+
+    # Certaines anciennes installations ont créé une partie des tables du
+    # module timetable avant l'ajout de ses migrations. On complète uniquement
+    # les tables absentes : les tables et les données existantes sont conservées.
+    # Une copie de sauvegarde est créée avant toute modification du schéma.
+    python manage.py shell -c "
+from django.conf import settings
+from django.db import connection
+from pathlib import Path
+from shutil import copy2
+from datetime import datetime
+
+from apps.timetable.models import TimeSlot, TimetableSchedule, TimetableEntry
+
+database = Path(settings.DATABASES['default']['NAME'])
+if database.exists():
+    backup = database.with_name(
+        database.name + '.before-timetable-repair-' +
+        datetime.now().strftime('%Y%m%d-%H%M%S') + '.bak'
+    )
+    copy2(database, backup)
+    print('Sauvegarde créée : ' + str(backup))
+
+models = [TimeSlot, TimetableSchedule, TimetableEntry]
+with connection.cursor() as cursor:
+    existing = set(connection.introspection.table_names(cursor))
+
+missing = [model for model in models if model._meta.db_table not in existing]
+if missing:
+    print('Création des tables timetable manquantes : ' +
+          ', '.join(model._meta.db_table for model in missing))
+    with connection.schema_editor() as schema_editor:
+        for model in missing:
+            schema_editor.create_model(model)
+else:
+    print('Tables timetable déjà présentes, aucune création nécessaire.')
+"
+
+    warn "Schéma timetable réparé sans suppression de données. Marquage de timetable.0001 comme appliquée..."
+    python manage.py migrate timetable 0001 --fake
+
     if python manage.py shell -c "
 from django.db import connection
 import sys
 
-required = {
-    'timetable_timeslot',
-    'timetable_timetableschedule',
-    'timetable_timetableentry',
-}
 with connection.cursor() as cursor:
     tables = set(connection.introspection.table_names(cursor))
-missing = sorted(required - tables)
-if missing:
-    print('Tables timetable manquantes : ' + ', '.join(missing))
-    sys.exit(1)
-print('Tables timetable existantes : ' + ', '.join(sorted(required)))
+sys.exit(0 if 'timetable_schoolconfig' in tables else 1)
 "; then
-
-        warn "Tables timetable détectées. Marquage de timetable.0001 comme appliquée..."
-        python manage.py migrate timetable 0001 --fake
-        python manage.py migrate --run-syncdb --fake-initial
-
-    else
-
-        error "Le schéma timetable existant est incomplet. Migration interrompue pour protéger les données."
-        exit 1
-
+        warn "Table timetable_schoolconfig détectée. Marquage de timetable.0002 comme appliquée..."
+        python manage.py migrate timetable 0002 --fake
     fi
+
+    python manage.py migrate --run-syncdb --fake-initial
 
 fi
 
