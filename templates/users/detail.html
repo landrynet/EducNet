@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'users:list' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="mb-0 fw-bold">{{ user_obj.get_full_name }}</h4>
+    <p class="text-muted small mb-0">{{ user_obj.get_role_display }}</p>
+  </div>
+  <div class="ms-auto d-flex gap-2">
+    <a href="{% url 'users:edit' user_obj.pk %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-pencil me-1"></i>Modifier
+    </a>
+    <form method="post" action="{% url 'users:toggle' user_obj.pk %}" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit"
+              class="btn btn-sm btn-outline-{% if user_obj.is_active %}warning{% else %}success{% endif %}"
+              onclick="return confirm('{% if user_obj.is_active %}Désactiver{% else %}Activer{% endif %} cet utilisateur ?')">
+        {% if user_obj.is_active %}
+          <i class="bi bi-pause-circle me-1"></i>Désactiver
+        {% else %}
+          <i class="bi bi-play-circle me-1"></i>Activer
+        {% endif %}
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Profile card -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm text-center p-4">
+      {% if user_obj.photo %}
+      <img src="{{ user_obj.photo.url }}" alt="{{ user_obj.get_full_name }}"
+           class="rounded-circle mx-auto mb-3" style="width:88px;height:88px;object-fit:cover;">
+      {% else %}
+      <div class="user-avatar-xl mx-auto mb-3">{{ user_obj.initials }}</div>
+      {% endif %}
+      <h5 class="fw-bold mb-1">{{ user_obj.get_full_name }}</h5>
+      <span class="badge
+        {% if user_obj.role == 'super_admin' %}bg-danger-subtle text-danger
+        {% elif user_obj.role == 'admin_ecole' %}bg-primary-subtle text-primary
+        {% elif user_obj.role == 'enseignant' %}bg-success-subtle text-success
+        {% elif user_obj.role == 'comptable' %}bg-warning-subtle text-warning
+        {% else %}bg-secondary-subtle text-secondary{% endif %} rounded-pill mb-3">
+        {{ user_obj.get_role_display }}
+      </span>
+      <div class="mb-3">
+        {% if user_obj.is_active %}
+          <span class="badge bg-success-subtle text-success rounded-pill">Actif</span>
+        {% else %}
+          <span class="badge bg-secondary-subtle text-secondary rounded-pill">Inactif</span>
+        {% endif %}
+      </div>
+      <hr />
+      <div class="text-start small">
+        <div class="d-flex gap-2 mb-2">
+          <i class="bi bi-envelope text-muted mt-1" style="width:18px;"></i>
+          <span>{{ user_obj.email }}</span>
+        </div>
+        {% if user_obj.phone %}
+        <div class="d-flex gap-2 mb-2">
+          <i class="bi bi-telephone text-muted mt-1" style="width:18px;"></i>
+          <span>{{ user_obj.phone }}</span>
+        </div>
+        {% endif %}
+        {% if user_obj.school %}
+        <div class="d-flex gap-2 mb-2">
+          <i class="bi bi-building text-muted mt-1" style="width:18px;"></i>
+          <span>{{ user_obj.school.name }}</span>
+        </div>
+        {% endif %}
+        <div class="d-flex gap-2 mb-2">
+          <i class="bi bi-calendar text-muted mt-1" style="width:18px;"></i>
+          <span>Depuis {{ user_obj.date_joined|date:"d/m/Y" }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password status -->
+    <div class="card border-0 shadow-sm mt-4 p-3">
+      <h6 class="fw-semibold mb-2 small text-muted text-uppercase">Sécurité du compte</h6>
+      {% if user_obj.must_change_password %}
+      <div class="d-flex align-items-center gap-2 text-warning small">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>Mot de passe temporaire — connexion requise pour le changer</span>
+      </div>
+      {% else %}
+      <div class="d-flex align-items-center gap-2 text-success small">
+        <i class="bi bi-shield-check-fill"></i>
+        <span>Mot de passe personnalisé</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Details -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-person-badge me-2 text-primary"></i>Informations du compte
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="text-muted small">Prénom</div>
+            <div class="fw-medium">{{ user_obj.first_name|default:"—" }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Nom</div>
+            <div class="fw-medium">{{ user_obj.last_name|default:"—" }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Adresse email</div>
+            <div class="fw-medium">{{ user_obj.email }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Téléphone</div>
+            <div class="fw-medium">{{ user_obj.phone|default:"—" }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Rôle</div>
+            <div class="fw-medium">{{ user_obj.get_role_display }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">École</div>
+            <div class="fw-medium">{{ user_obj.school.name|default:"Super Administrateur" }}</div>
+          </div>
+          {% if user_obj.address %}
+          <div class="col-12">
+            <div class="text-muted small">Adresse</div>
+            <div class="fw-medium">{{ user_obj.address }}</div>
+          </div>
+          {% endif %}
+          <div class="col-sm-6">
+            <div class="text-muted small">Profil complété</div>
+            <div class="fw-medium">
+              {% if user_obj.profile_completed %}
+                <span class="text-success"><i class="bi bi-check-circle me-1"></i>Oui</span>
+              {% else %}
+                <span class="text-muted"><i class="bi bi-circle me-1"></i>Non</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Date d'inscription</div>
+            <div class="fw-medium">{{ user_obj.date_joined|date:"d/m/Y à H:i" }}</div>
+          </div>
+          {% if user_obj.last_login %}
+          <div class="col-sm-6">
+            <div class="text-muted small">Dernière connexion</div>
+            <div class="fw-medium">{{ user_obj.last_login|date:"d/m/Y à H:i" }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if staff_profile %}
+    <!-- Staff profile section if teacher -->
+    <div class="card border-0 shadow-sm mt-4">
+      <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-briefcase me-2 text-info"></i>Profil professionnel (Personnel)
+        </h6>
+        <a href="{% url 'staff:detail' staff_profile.pk %}" class="btn btn-sm btn-outline-info">
+          <i class="bi bi-eye me-1"></i>Voir le profil personnel
+        </a>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="text-muted small">Type de personnel</div>
+            <div class="fw-medium">{{ staff_profile.get_staff_type_display }}</div>
+          </div>
+          <div class="col-sm-6">
+            <div class="text-muted small">Type de contrat</div>
+            <div class="fw-medium">{{ staff_profile.get_contract_type_display }}</div>
+          </div>
+          {% if staff_profile.employee_id %}
+          <div class="col-sm-6">
+            <div class="text-muted small">Matricule</div>
+            <div class="fw-medium font-monospace">{{ staff_profile.employee_id }}</div>
+          </div>
+          {% endif %}
+          {% if staff_profile.hire_date %}
+          <div class="col-sm-6">
+            <div class="text-muted small">Date d'embauche</div>
+            <div class="fw-medium">{{ staff_profile.hire_date|date:"d/m/Y" }}</div>
+          </div>
+          {% endif %}
+        </div>
+        {% if staff_profile.subjects.exists %}
+        <div class="mt-3">
+          <div class="text-muted small mb-2">Matières enseignées</div>
+          <div class="d-flex flex-wrap gap-2">
+            {% for subject in staff_profile.subjects.all %}
+            <span class="badge px-3 py-2 rounded-pill"
+                  style="background:{{ subject.color }}20;color:{{ subject.color }};border:1px solid {{ subject.color }}40;">
+              <span class="me-1">●</span>{{ subject.name }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

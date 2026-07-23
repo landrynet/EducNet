@@ -269,6 +269,28 @@ def index(request):
 
 
 @login_required
+@role_required(['secretaire'])
+def teachers_by_subject(request, classroom_id, subject_id):
+    """Return JSON list of teachers assigned to a subject in this classroom's school."""
+    school = _get_school(request)
+    classroom = get_object_or_404(Classroom, pk=classroom_id, school=school)
+    # Verify the subject belongs to the classroom
+    subject = classroom.subjects.filter(pk=subject_id, school=school).first()
+    if not subject:
+        return JsonResponse({'teachers': []})
+    # Get teachers with a staff profile that includes this subject
+    teacher_pks = StaffProfile.objects.filter(
+        school=school, subjects=subject
+    ).values_list('user_id', flat=True)
+    teachers = User.objects.filter(
+        pk__in=teacher_pks, school=school, role=Role.ENSEIGNANT, is_active=True
+    ).order_by('last_name', 'first_name')
+    return JsonResponse({
+        'teachers': [{'pk': t.pk, 'name': t.get_full_name()} for t in teachers]
+    })
+
+
+@login_required
 @role_required(['admin_ecole', 'secretaire', 'super_admin'])
 def global_timetable(request):
     """Display all classroom timetables in one school-wide grid."""

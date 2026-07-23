@@ -113,6 +113,29 @@ def user_toggle_active(request, pk):
 
 
 @login_required
+@role_required(['super_admin', 'admin_ecole'])
+def user_detail(request, pk):
+    """View a user's detail page (read-only)."""
+    if request.user.is_super_admin:
+        user_obj = get_object_or_404(User, pk=pk)
+    else:
+        user_obj = get_object_or_404(User, pk=pk, school=request.user.school)
+
+    # Try to get associated staff profile if the user is a teacher
+    staff_profile = None
+    try:
+        staff_profile = user_obj.staff_profile
+    except Exception:
+        pass
+
+    return render(request, 'users/detail.html', {
+        'user_obj': user_obj,
+        'staff_profile': staff_profile,
+        'title': user_obj.get_full_name(),
+    })
+
+
+@login_required
 def profile(request):
     """User's own profile."""
     if request.method == 'POST':

@@ -314,8 +314,51 @@ const DAY_LABELS = { {% for day_num, day_label in days %}'{{ day_num }}': '{{ da
 const SLOT_TIMES = {};
 {% for row in grid %}SLOT_TIMES['{{ row.slot.pk }}'] = '{{ row.slot.time_range }}';{% endfor %}
 
+const CLASSROOM_ID = {{ classroom.pk }};
+// Base URL for the teachers-by-subject endpoint
+const TEACHERS_URL = (subjectId) =>
+  `/timetable/classe/${CLASSROOM_ID}/subject/${subjectId}/teachers/`;
+
 const addModal = new bootstrap.Modal(document.getElementById('addModal'));
 const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+
+/**
+ * Populate a teacher <select> with the result of the teachers-by-subject API.
+ * Shows a loading state while fetching.
+ */
+function loadTeachers(subjectId, selectEl, currentTeacherId) {
+  if (!subjectId) {
+    selectEl.innerHTML = '<option value="">— Aucun enseignant —</option>';
+    return;
+  }
+  selectEl.innerHTML = '<option value="">Chargement…</option>';
+  selectEl.disabled = true;
+  fetch(TEACHERS_URL(subjectId), {
+    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  })
+  .then(r => r.json())
+  .then(data => {
+    selectEl.innerHTML = '<option value="">— Aucun —</option>';
+    data.teachers.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.pk;
+      opt.textContent = t.name;
+      if (String(t.pk) === String(currentTeacherId)) opt.selected = true;
+      selectEl.appendChild(opt);
+    });
+    if (!data.teachers.length) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = '— Aucun enseignant affecté —';
+      opt.disabled = true;
+      selectEl.appendChild(opt);
+    }
+  })
+  .catch(() => {
+    selectEl.innerHTML = '<option value="">— Erreur de chargement —</option>';
+  })
+  .finally(() => { selectEl.disabled = false; });
+}
 
 function openAddModal(day, slotId) {
   document.getElementById('addDay').value = day;
@@ -323,7 +366,7 @@ function openAddModal(day, slotId) {
   document.getElementById('addDayLabel').textContent = DAY_LABELS[day] || day;
   document.getElementById('addSlotLabel').textContent = SLOT_TIMES[slotId] || slotId;
   document.getElementById('addSubject').value = '';
-  document.getElementById('addTeacher').value = '';
+  document.getElementById('addTeacher').innerHTML = '<option value="">— Choisir d\'abord une matière —</option>';
   document.getElementById('addRoom').value = '';
   document.getElementById('addConflictAlert').classList.add('d-none');
   document.getElementById('addForm').action = "{% url 'timetable:entry_add' classroom.pk %}";
@@ -332,20 +375,33 @@ function openAddModal(day, slotId) {
 
 function openEditModal(entryPk, subjectId, teacherId, room) {
   document.getElementById('editSubject').value = subjectId;
-  document.getElementById('editTeacher').value = teacherId || '';
   document.getElementById('editRoom').value = room;
   document.getElementById('editConflictAlert').classList.add('d-none');
   document.getElementById('editForm').action = `/timetable/entry/${entryPk}/edit/`;
+  // Load teachers for the current subject, pre-selecting the current teacher
+  loadTeachers(subjectId, document.getElementById('editTeacher'), teacherId);
   editModal.show();
 }
+
+// When subject changes in add modal → reload teacher list
+document.getElementById('addSubject').addEventListener('change', function() {
+  loadTeachers(this.value, document.getElementById('addTeacher'), '');
+});
+
+// When subject changes in edit modal → reload teacher list (clear current selection)
+document.getElementById('editSubject').addEventListener('change', function() {
+  loadTeachers(this.value, document.getElementById('editTeacher'), '');
+});
 
 // AJAX form submission
 function submitForm(formId, alertId, modal) {
   const form = document.getElementById(formId);
-  const alert = document.getElementById(alertId);
+  const alertEl = document.getElementById(alertId);
   form.addEventListener('submit', function(e) {
     e.preventDefault();
-    alert.classList.add('d-none');
+    alertEl.classList.add('d-none');
+    const submitBtn = form.querySelector('[type=submit]');
+    if (submitBtn) { submitBtn.disabled = true; }
     const data = new FormData(form);
     fetch(form.action, {
       method: 'POST',
@@ -359,15 +415,16 @@ function submitForm(formId, alertId, modal) {
         window.location.reload();
       } else {
         const errors = data.errors || ['Une erreur est survenue.'];
-        alert.innerHTML = '<strong>Conflit détecté :</strong><ul class="mb-0 ps-3">' +
+        alertEl.innerHTML = '<strong>Conflit détecté :</strong><ul class="mb-0 ps-3">' +
           errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-        alert.classList.remove('d-none');
+        alertEl.classList.remove('d-none');
       }
     })
     .catch(() => {
-      alert.textContent = 'Erreur de communication avec le serveur.';
-      alert.classList.remove('d-none');
-    });
+      alertEl.textContent = 'Erreur de communication avec le serveur.';
+      alertEl.classList.remove('d-none');
+    })
+    .finally(() => { if (submitBtn) { submitBtn.disabled = false; } });
   });
 }
 

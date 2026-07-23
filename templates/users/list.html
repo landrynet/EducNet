@@ -75,6 +75,7 @@
           </td>
           <td class="text-end pe-4">
             <div class="btn-group btn-group-sm">
+              <a href="{% url 'users:detail' u.pk %}" class="btn btn-outline-secondary" title="Voir le détail"><i class="bi bi-eye"></i></a>
               <a href="{% url 'users:edit' u.pk %}" class="btn btn-outline-primary" title="Modifier"><i class="bi bi-pencil"></i></a>
               <a href="{% url 'users:toggle' u.pk %}" class="btn btn-outline-{% if u.is_active %}danger{% else %}success{% endif %}"
                  onclick="return confirm('{% if u.is_active %}Désactiver{% else %}Activer{% endif %} cet utilisateur ?')"

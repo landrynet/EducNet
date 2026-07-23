@@ -14,6 +14,7 @@ urlpatterns = [
     path('config/<int:pk>/delete/', views.timeslot_delete, name='timeslot_delete'),
 
     # Classroom timetable grid
+    path('classe/<int:classroom_id>/subject/<int:subject_id>/teachers/', views.teachers_by_subject, name='teachers_by_subject'),
     path('classe/<int:classroom_id>/', views.classroom_timetable, name='classroom_timetable'),
     path('classe/<int:classroom_id>/entry/add/', views.entry_add, name='entry_add'),
     path('entry/<int:pk>/edit/', views.entry_edit, name='entry_edit'),

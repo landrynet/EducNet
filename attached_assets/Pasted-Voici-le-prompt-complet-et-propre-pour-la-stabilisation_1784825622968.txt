@@ -1,0 +1,614 @@
+Voici le **prompt complet et propre** pour la stabilisation finale de la **Phase 2 — Emploi du temps**, avec les pages de détail des enseignants et des utilisateurs.
+
+```text
+PROMPT — STABILISATION FINALE DE LA PHASE 2
+MODULE EMPLOI DU TEMPS + PAGES DE DÉTAIL
+
+Le problème de migration lié à `timetable_timeslot.slot_type` est déjà corrigé.
+
+Ne pas modifier inutilement les migrations ni supprimer la base de données.
+
+La mission actuelle est de terminer, corriger et stabiliser complètement la Phase 2 avant de considérer le travail comme terminé.
+
+Ne pas commencer la Phase 3.
+
+==================================================
+1. ANALYSER L'ÉTAT ACTUEL DU PROJET
+==================================================
+
+Avant toute modification, analyser le code existant :
+
+- modèles ;
+- vues ;
+- formulaires ;
+- URLs ;
+- templates ;
+- JavaScript ;
+- permissions ;
+- relations entre écoles, classes, matières et enseignants ;
+- relations entre enseignants et comptes utilisateurs ;
+- script central de données de test.
+
+Ne pas recréer inutilement ce qui existe déjà.
+
+Identifier clairement :
+
+- ce qui fonctionne ;
+- ce qui fonctionne partiellement ;
+- ce qui ne fonctionne pas ;
+- les bugs éventuels ;
+- les fonctionnalités manquantes.
+
+==================================================
+2. EMPLOI DU TEMPS — GRILLE
+==================================================
+
+La grille doit fonctionner par :
+
+- école ;
+- classe ;
+- jour ;
+- créneau horaire.
+
+Pour chaque case vide, le Secrétaire doit pouvoir cliquer sur le bouton `+`.
+
+Le bouton `+` doit réellement ouvrir le formulaire d'ajout d'un cours.
+
+Le formulaire doit transmettre correctement :
+
+- l'école ;
+- la classe ;
+- le jour ;
+- le créneau horaire.
+
+Le bouton `+` doit fonctionner réellement de bout en bout.
+
+==================================================
+3. FILTRAGE DES MATIÈRES PAR CLASSE
+==================================================
+
+RÈGLE MÉTIER OBLIGATOIRE :
+
+Lorsqu'une classe est sélectionnée, seules les matières affectées à cette classe doivent être proposées.
+
+Exemple :
+
+Classe : 4ème A
+
+Matières disponibles :
+
+- Mathématiques ;
+- Français ;
+- Anglais ;
+- Histoire.
+
+Une matière qui n'est pas affectée à la classe sélectionnée ne doit jamais apparaître.
+
+Cette règle doit être appliquée :
+
+- dans l'interface ;
+- dans le formulaire ;
+- dans le backend.
+
+Le backend doit empêcher toute tentative d'enregistrer une matière qui n'appartient pas à la classe.
+
+==================================================
+4. FILTRAGE DES ENSEIGNANTS
+==================================================
+
+Après sélection d'une matière, afficher uniquement les enseignants réellement affectés à cette matière.
+
+Flux obligatoire :
+
+Classe
+    ↓
+Matières affectées à la classe
+    ↓
+Sélection de la matière
+    ↓
+Enseignants affectés à cette matière
+    ↓
+Création du cours
+
+Le système ne doit jamais proposer :
+
+- un enseignant d'une autre matière ;
+- un enseignant d'une autre école ;
+- un enseignant non affecté à la matière.
+
+Ces règles doivent être vérifiées :
+
+- dans l'interface ;
+- dans le formulaire ;
+- dans le backend.
+
+==================================================
+5. AJOUTER UN COURS
+==================================================
+
+Le Secrétaire doit pouvoir :
+
+1. Cliquer sur `+`.
+2. Sélectionner une matière de la classe.
+3. Sélectionner un enseignant compatible.
+4. Sélectionner une salle si applicable.
+5. Enregistrer le cours.
+
+Après l'enregistrement :
+
+- le cours doit être enregistré en base ;
+- la grille doit être mise à jour ;
+- la matière doit apparaître ;
+- l'enseignant doit apparaître ;
+- la salle doit apparaître si elle existe.
+
+Vérifier les URLs, les vues, les formulaires et le JavaScript associés.
+
+==================================================
+6. MODIFIER UN COURS
+==================================================
+
+Pour chaque cours existant, ajouter une action "Modifier".
+
+Le Secrétaire doit pouvoir modifier :
+
+- la matière ;
+- l'enseignant ;
+- la salle si applicable.
+
+Lors de la modification :
+
+- seules les matières de la classe doivent être disponibles ;
+- seuls les enseignants compatibles doivent être disponibles ;
+- les conflits doivent être vérifiés.
+
+Après sauvegarde :
+
+- la modification doit être enregistrée ;
+- la grille doit être mise à jour.
+
+==================================================
+7. SUPPRIMER UN COURS
+==================================================
+
+Pour chaque cours existant, ajouter une action "Supprimer".
+
+Avant la suppression :
+
+- demander une confirmation.
+
+Après confirmation :
+
+- supprimer uniquement le cours sélectionné ;
+- ne pas supprimer le créneau horaire ;
+- ne pas supprimer la classe ;
+- ne pas supprimer la matière ;
+- ne pas supprimer les autres cours.
+
+Après suppression :
+
+- la case doit redevenir vide ;
+- le bouton `+` doit réapparaître.
+
+==================================================
+8. DÉTECTION DES CONFLITS
+==================================================
+
+Le système doit empêcher :
+
+CONFLIT DE CLASSE :
+
+Une classe ne peut pas avoir deux cours au même moment.
+
+CONFLIT D'ENSEIGNANT :
+
+Un enseignant ne peut pas enseigner deux classes au même moment.
+
+CONFLIT DE SALLE :
+
+Une salle ne peut pas être utilisée par deux classes au même moment.
+
+Afficher des messages d'erreur clairs.
+
+==================================================
+9. GESTION DES CRÉNEAUX
+==================================================
+
+Le système doit distinguer :
+
+- Cours ;
+- Pause.
+
+Une pause ne doit pas permettre l'ajout d'un cours.
+
+Les créneaux de type `break` doivent être affichés comme des pauses.
+
+Les créneaux de type `course` doivent permettre l'ajout d'un cours.
+
+==================================================
+10. PERMISSIONS
+==================================================
+
+SECRÉTAIRE :
+
+Peut :
+
+- configurer les horaires ;
+- configurer les pauses ;
+- ajouter un cours ;
+- modifier un cours ;
+- supprimer un cours ;
+- gérer l'emploi du temps.
+
+DIRECTEUR / PRÉFET :
+
+Consultation uniquement.
+
+Ne peut pas :
+
+- ajouter ;
+- modifier ;
+- supprimer ;
+- configurer.
+
+ENSEIGNANT :
+
+Peut :
+
+- consulter son emploi du temps ;
+- voir ses matières ;
+- voir ses classes ;
+- télécharger ;
+- imprimer.
+
+Ne peut pas modifier l'emploi du temps.
+
+Les utilisateurs qui n'ont pas accès au module ne doivent pas voir le module dans la sidebar.
+
+Les boutons d'action doivent être masqués pour les utilisateurs sans permission.
+
+==================================================
+11. ISOLATION MULTI-SITE
+==================================================
+
+Une école ne doit jamais accéder aux données d'une autre école.
+
+Vérifier l'isolation pour :
+
+- classes ;
+- matières ;
+- enseignants ;
+- salles ;
+- créneaux ;
+- emplois du temps ;
+- utilisateurs.
+
+Tester également les accès directs par URL.
+
+Un utilisateur d'une école ne doit jamais pouvoir consulter les données d'une autre école sans permission explicite.
+
+==================================================
+12. PAGES DE DÉTAIL DES UTILISATEURS
+==================================================
+
+Le système doit disposer d'une vraie page de détail pour les utilisateurs.
+
+Lorsqu'un utilisateur est affiché dans une liste, ajouter un bouton ou un lien :
+
+"Voir le détail"
+
+La page de détail doit afficher uniquement les informations autorisées selon le rôle de l'utilisateur connecté.
+
+Afficher notamment, si autorisé :
+
+- nom complet ;
+- adresse e-mail ;
+- téléphone ;
+- rôle ;
+- école associée ;
+- statut du compte ;
+- informations professionnelles disponibles.
+
+Ne jamais afficher :
+
+- mot de passe ;
+- mot de passe temporaire ;
+- hash du mot de passe ;
+- données sensibles non autorisées.
+
+Ajouter :
+
+- bouton "Retour" ;
+- navigation claire.
+
+==================================================
+13. PAGE DE DÉTAIL D'UN ENSEIGNANT
+==================================================
+
+La page de détail d'un enseignant doit afficher ses informations professionnelles.
+
+Ajouter une section clairement identifiée :
+
+"Compte utilisateur associé"
+
+Cette section doit afficher, si un compte existe :
+
+- nom de l'utilisateur ;
+- identifiant de connexion autorisé à être affiché ;
+- adresse e-mail si autorisée ;
+- rôle ;
+- statut du compte.
+
+Ajouter un bouton ou un lien :
+
+"Voir le profil utilisateur"
+
+Ce lien doit rediriger vers la page de détail du compte utilisateur associé.
+
+Flux attendu :
+
+Enseignant
+    ↓
+Page détail de l'enseignant
+    ↓
+Compte utilisateur associé
+    ↓
+Voir le profil utilisateur
+    ↓
+Page détail de l'utilisateur
+
+==================================================
+14. CAS SANS COMPTE UTILISATEUR
+==================================================
+
+Si aucun compte utilisateur n'est associé à l'enseignant, afficher clairement :
+
+"Aucun compte utilisateur associé"
+
+L'affichage doit être propre.
+
+Ne pas afficher de lien cassé.
+
+==================================================
+15. PERMISSIONS DES PAGES DE DÉTAIL
+==================================================
+
+Les pages de détail doivent respecter les permissions.
+
+Un utilisateur ne doit pas pouvoir accéder au profil d'un autre utilisateur uniquement en modifiant manuellement l'URL.
+
+Vérifier :
+
+- le rôle de l'utilisateur connecté ;
+- l'école associée ;
+- les permissions ;
+- l'isolation Multi-Site.
+
+==================================================
+16. SCRIPT CENTRAL DE DONNÉES DE TEST
+==================================================
+
+Utiliser le script central de données de test existant.
+
+Ne pas créer un système de seed parallèle.
+
+Le script doit respecter les relations réelles :
+
+École
+    ↓
+Classe
+    ↓
+Matières affectées à la classe
+    ↓
+Enseignants affectés à la matière
+    ↓
+Emploi du temps
+
+Le script doit :
+
+- être réexécutable ;
+- éviter les doublons ;
+- préserver les données existantes ;
+- ajouter uniquement les données manquantes ;
+- respecter les relations existantes.
+
+Le seed ne doit jamais :
+
+- associer une matière à une classe qui ne l'a pas ;
+- associer un enseignant à une matière qu'il n'enseigne pas ;
+- créer des données d'une autre école ;
+- créer des doublons.
+
+==================================================
+17. VÉRIFICATION DE L'INTERFACE
+==================================================
+
+Vérifier :
+
+- bouton `+` ;
+- bouton Modifier ;
+- bouton Supprimer ;
+- bouton Enregistrer ;
+- bouton Annuler ;
+- boutons de détail ;
+- lien vers le profil utilisateur ;
+- messages de confirmation ;
+- messages d'erreur ;
+- affichage des cours ;
+- affichage des pauses ;
+- affichage des créneaux vides.
+
+Les actions doivent être visibles uniquement aux utilisateurs autorisés.
+
+L'interface doit rester cohérente avec le design actuel du système.
+
+==================================================
+18. TESTS FONCTIONNELS
+==================================================
+
+Tester complètement :
+
+1. Connexion.
+2. Accès au module.
+3. Affichage de la grille.
+4. Bouton `+`.
+5. Ajout d'un cours.
+6. Affichage du cours.
+7. Modification du cours.
+8. Suppression du cours.
+9. Confirmation de suppression.
+10. Filtrage des matières par classe.
+11. Filtrage des enseignants par matière.
+12. Conflit de classe.
+13. Conflit d'enseignant.
+14. Conflit de salle.
+15. Configuration des horaires.
+16. Configuration des pauses.
+17. Consultation par le Directeur / Préfet.
+18. Consultation par l'Enseignant.
+19. Téléchargement PDF.
+20. Impression.
+21. Isolation Multi-Site.
+22. Réexécution du script de données de test.
+23. Accès à la page de détail d'un utilisateur.
+24. Accès à la page de détail d'un enseignant.
+25. Présence de la section "Compte utilisateur associé".
+26. Fonctionnement du lien vers le profil utilisateur.
+27. Cas où aucun compte utilisateur n'est associé.
+28. Protection des informations sensibles.
+29. Protection contre l'accès à un utilisateur d'une autre école.
+
+==================================================
+19. VÉRIFICATION TECHNIQUE
+==================================================
+
+Exécuter les vérifications Django nécessaires :
+
+python manage.py check
+
+python manage.py showmigrations
+
+python manage.py makemigrations --check
+
+Vérifier :
+
+- erreurs de migration ;
+- erreurs de base de données ;
+- erreurs de template ;
+- erreurs JavaScript ;
+- erreurs de permission ;
+- erreurs de relations.
+
+Ne pas supprimer la base de données.
+
+Ne pas modifier inutilement les migrations existantes.
+
+==================================================
+20. OBJECTIF FINAL
+==================================================
+
+La Phase 2 doit être considérée comme terminée uniquement lorsque :
+
+- l'emploi du temps s'affiche correctement ;
+- le bouton `+` fonctionne ;
+- un cours peut être ajouté ;
+- un cours peut être modifié ;
+- un cours peut être supprimé ;
+- les matières sont filtrées par classe ;
+- les enseignants sont filtrés par matière ;
+- les conflits sont détectés ;
+- les permissions sont respectées ;
+- l'isolation Multi-Site fonctionne ;
+- le script de données de test fonctionne ;
+- les pages de détail fonctionnent ;
+- le lien Enseignant → Compte utilisateur fonctionne ;
+- les informations sensibles sont protégées ;
+- aucune erreur critique ne reste.
+
+==================================================
+21. NE PAS COMMENCER LA PHASE 3
+==================================================
+
+Ne pas développer :
+
+- évaluations ;
+- fiches de cotation ;
+- notes ;
+- bulletins ;
+- portail élève.
+
+Cette tâche concerne uniquement :
+
+CORRECTION
++
+STABILISATION
++
+VALIDATION DE LA PHASE 1
++
+VALIDATION DE LA PHASE 2
+
+==================================================
+22. RAPPORT FINAL OBLIGATOIRE
+==================================================
+
+À la fin, fournir un rapport clair :
+
+PHASE 1 :
+OK / PROBLÈMES
+
+PHASE 2 :
+OK / PROBLÈMES
+
+AJOUTER UN COURS :
+OK / PROBLÈMES
+
+MODIFIER UN COURS :
+OK / PROBLÈMES
+
+SUPPRIMER UN COURS :
+OK / PROBLÈMES
+
+FILTRAGE MATIÈRES PAR CLASSE :
+OK / PROBLÈMES
+
+FILTRAGE ENSEIGNANTS PAR MATIÈRE :
+OK / PROBLÈMES
+
+CONFLITS :
+OK / PROBLÈMES
+
+PERMISSIONS :
+OK / PROBLÈMES
+
+MULTI-SITE :
+OK / PROBLÈMES
+
+PAGES DE DÉTAIL UTILISATEUR :
+OK / PROBLÈMES
+
+PAGE DE DÉTAIL ENSEIGNANT :
+OK / PROBLÈMES
+
+LIEN ENSEIGNANT → UTILISATEUR :
+OK / PROBLÈMES
+
+DONNÉES DE TEST :
+OK / PROBLÈMES
+
+MIGRATIONS :
+OK / PROBLÈMES
+
+TESTS :
+RÉUSSIS / ÉCHECS
+
+STATUT FINAL DE LA PHASE 2 :
+TERMINÉE / NON TERMINÉE
+```
+
+**Point essentiel à respecter :** le flux de création d'un cours doit être :
+
+**Classe → Matières de cette classe → Enseignants de cette matière → Enregistrement du cours.**
+
+Et pour les informations :
+
+**Enseignant → Détail enseignant → Compte utilisateur associé → Détail utilisateur.**
