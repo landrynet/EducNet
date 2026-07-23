@@ -1,0 +1,368 @@
+Oui. Pour être sûr que **la Phase 2 est réellement terminée**, donne-lui ce prompt de vérification et de stabilisation :
+
+---
+
+# PROMPT — V2.0 PHASE 2
+
+## VÉRIFICATION FINALE, STABILITÉ ET VALIDATION
+
+Le développement de la **Phase 2 — Module Emploi du temps** a été commencé, mais l'agent précédent s'est arrêté brusquement.
+
+Ta mission est maintenant de **reprendre le projet, analyser l'état réel du travail et terminer correctement la Phase 2**.
+
+⚠️ Ne suppose pas que le travail est terminé.
+
+⚠️ Vérifie réellement le code existant avant toute modification.
+
+⚠️ Ne commence pas la Phase 3 (Évaluations et fiche de cotation).
+
+---
+
+## 1. ANALYSE DE L'ÉTAT ACTUEL
+
+Commencer par analyser :
+
+* Les fichiers déjà créés ou modifiés.
+* Les modèles.
+* Les migrations.
+* Les vues.
+* Les formulaires.
+* Les URLs.
+* Les templates.
+* La sidebar.
+* Les permissions.
+* Le script central de données de test.
+
+Déterminer clairement :
+
+* Ce qui est terminé.
+* Ce qui est partiellement terminé.
+* Ce qui manque.
+* Ce qui contient des bugs.
+
+Ne pas recréer inutilement ce qui existe déjà.
+
+---
+
+## 2. VÉRIFIER LA PHASE 1
+
+Vérifier que la Phase 1 fonctionne toujours correctement :
+
+```text
+École
+   ↓
+Classes
+   ↓
+Matières
+   ↓
+Enseignants
+```
+
+Vérifier :
+
+* Les relations entre classes et matières.
+* Les relations entre enseignants et matières.
+* L'affichage des matières.
+* Les permissions.
+* L'isolation Multi-Site.
+
+⚠️ Ne pas casser la Phase 1.
+
+---
+
+# 3. VÉRIFIER LA PHASE 2 — EMPLOI DU TEMPS
+
+Vérifier que toutes les fonctionnalités suivantes sont réellement fonctionnelles.
+
+## Configuration des horaires
+
+Le Secrétaire doit pouvoir :
+
+* Configurer les horaires.
+* Configurer les créneaux.
+* Configurer les pauses.
+* Définir plusieurs pauses si nécessaire.
+
+Les horaires doivent être propres à chaque école.
+
+---
+
+## Création de l'emploi du temps
+
+Le Secrétaire doit pouvoir :
+
+1. Sélectionner une classe.
+2. Voir la grille horaire.
+3. Sélectionner un jour.
+4. Sélectionner un créneau.
+5. Choisir une matière.
+6. Choisir un enseignant.
+7. Choisir une salle si disponible.
+8. Enregistrer le cours.
+
+La matière et l'enseignant doivent respecter les relations existantes.
+
+---
+
+## Détection des conflits
+
+Vérifier que le système bloque :
+
+### Conflit enseignant
+
+Un enseignant ne peut pas être dans deux classes au même moment.
+
+### Conflit classe
+
+Une classe ne peut pas avoir deux cours au même moment.
+
+### Conflit salle
+
+Une salle ne peut pas être utilisée par deux classes au même moment.
+
+Les messages d'erreur doivent être clairs.
+
+---
+
+# 4. VÉRIFIER LES PERMISSIONS
+
+### Secrétaire
+
+Doit pouvoir :
+
+* Créer.
+* Modifier.
+* Supprimer.
+* Configurer les horaires.
+* Configurer les pauses.
+* Publier.
+
+### Directeur / Préfet
+
+Doit uniquement :
+
+* Consulter les emplois du temps.
+
+Il ne doit pas pouvoir :
+
+* Créer.
+* Modifier.
+* Supprimer.
+* Configurer.
+
+### Enseignant
+
+Doit pouvoir :
+
+* Voir son emploi du temps.
+* Voir ses classes.
+* Voir ses matières.
+* Télécharger son emploi du temps.
+* Imprimer son emploi du temps.
+
+Les rôles qui n'ont pas accès à ce module ne doivent pas voir le module dans la sidebar.
+
+---
+
+# 5. VÉRIFIER L'AFFICHAGE
+
+Vérifier :
+
+* Emploi du temps par classe.
+* Emploi du temps par enseignant.
+* Emploi du temps global.
+* Affichage des matières.
+* Affichage des enseignants.
+* Affichage des salles.
+* Affichage des pauses.
+* Affichage des périodes libres.
+
+Le design doit être cohérent avec le reste de l'application.
+
+---
+
+# 6. VÉRIFIER LE TÉLÉCHARGEMENT
+
+L'enseignant doit pouvoir :
+
+* Télécharger son emploi du temps.
+* Générer un PDF.
+* Imprimer son emploi du temps.
+
+Vérifier que le PDF contient les bonnes informations.
+
+---
+
+# 7. VÉRIFIER LE SCRIPT DE DONNÉES DE TEST
+
+Utiliser le **script central de données de test existant**.
+
+⚠️ Ne pas créer un nouveau script.
+
+Vérifier qu'il contient correctement :
+
+* Les écoles.
+* Les classes.
+* Les matières.
+* Les enseignants.
+* Les relations.
+* Les horaires.
+* Les pauses.
+* Les emplois du temps.
+
+Le script doit :
+
+* Être réexécutable.
+* Ne pas créer de doublons.
+* Ajouter uniquement les données manquantes.
+* Préserver les données existantes.
+
+Exécuter réellement le script et vérifier son fonctionnement.
+
+---
+
+# 8. VÉRIFIER LES MIGRATIONS
+
+Vérifier :
+
+* Les migrations manquantes.
+* Les migrations non appliquées.
+* Les erreurs de base de données.
+* Les relations incorrectes.
+
+Exécuter les vérifications Django nécessaires.
+
+Ne pas supprimer les données existantes sans raison.
+
+---
+
+# 9. TESTS DE STABILITÉ
+
+Tester au minimum :
+
+* Connexion.
+* Permissions.
+* Navigation.
+* Sidebar.
+* Phase 1.
+* Configuration des horaires.
+* Configuration des pauses.
+* Création d'un cours.
+* Modification d'un cours.
+* Suppression d'un cours.
+* Conflit d'enseignant.
+* Conflit de classe.
+* Conflit de salle.
+* Consultation par le Directeur / Préfet.
+* Consultation par l'Enseignant.
+* Téléchargement PDF.
+* Isolation entre écoles.
+
+---
+
+# 10. CORRIGER LES BUGS
+
+Corriger tous les bugs trouvés.
+
+Vérifier notamment :
+
+* Erreurs 500.
+* Erreurs 404.
+* Erreurs de permissions.
+* Erreurs de templates.
+* Erreurs de relations.
+* Erreurs de migrations.
+* Erreurs de données.
+* Liens cassés.
+* Boutons qui ne fonctionnent pas.
+* Pages incomplètes.
+
+Ne pas simplement masquer les erreurs.
+
+Corriger la cause réelle du problème.
+
+---
+
+# 11. STABILITÉ MULTI-SITE
+
+Vérifier qu'un utilisateur d'une école ne peut jamais :
+
+* Voir les données d'une autre école.
+* Voir les classes d'une autre école.
+* Voir les enseignants d'une autre école.
+* Voir les matières d'une autre école.
+* Voir les emplois du temps d'une autre école.
+
+Tester également l'accès direct à une URL avec un identifiant appartenant à une autre école.
+
+---
+
+# 12. VÉRIFICATION FINALE DU DESIGN
+
+Vérifier que :
+
+* Les pages sont cohérentes.
+* Les boutons sont visibles.
+* Les formulaires sont utilisables.
+* Les messages d'erreur sont clairs.
+* Les états vides sont propres.
+* Le responsive fonctionne.
+* Le design respecte l'interface générale du projet.
+
+---
+
+# 13. RÈGLE IMPORTANTE
+
+Ne pas ajouter de nouvelles fonctionnalités appartenant à la Phase 3.
+
+Ne pas développer :
+
+* Évaluations.
+* Fiches de cotation.
+* Notes.
+* Bulletins.
+* Portail Élève.
+
+Ces fonctionnalités seront développées dans une phase séparée.
+
+---
+
+# OBJECTIF FINAL
+
+À la fin de cette tâche :
+
+```text
+PHASE 1
+Matières / Classes / Enseignants
+        ↓
+PHASE 2
+Emploi du temps
+        ↓
+VALIDATION
+        ↓
+SYSTÈME STABLE
+```
+
+La Phase 2 doit être considérée comme terminée uniquement si :
+
+* Les fonctionnalités prévues sont réellement disponibles.
+* Les permissions sont correctes.
+* L'isolation Multi-Site fonctionne.
+* Le script central de données de test fonctionne.
+* Les migrations sont propres.
+* Les tests passent.
+* Aucun bug critique ne reste.
+* La Phase 1 n'a pas été cassée.
+
+À la fin, fournir un résumé clair :
+
+```text
+PHASE 1 : TERMINÉE / PROBLÈMES RESTANTS
+PHASE 2 : TERMINÉE / PROBLÈMES RESTANTS
+TESTS : RÉUSSIS / ÉCHECS
+MIGRATIONS : OK / PROBLÈMES
+DONNÉES DE TEST : OK / PROBLÈMES
+STABILITÉ : OK / PROBLÈMES
+```
+
+⚠️ **Ne pas commencer la Phase 3. Cette tâche sert uniquement à terminer, vérifier et stabiliser complètement la Phase 2.**
