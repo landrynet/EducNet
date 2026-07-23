@@ -78,6 +78,7 @@ class SchoolOnboardingTests(TestCase):
         self.assertRedirects(response, reverse('authentication:change_password'))
 
         response = self.client.post(reverse('authentication:change_password'), {
+            'temporary_password': temporary,
             'new_password1': 'Zebra!4829Qx',
             'new_password2': 'Zebra!4829Qx',
         })
@@ -91,3 +92,72 @@ class SchoolOnboardingTests(TestCase):
             self.client.get(reverse('dashboard:index')),
             reverse('authentication:setup'),
         )
+
+    def test_password_change_requires_the_temporary_password(self):
+        school = School.objects.create(
+            name='École mot de passe',
+            code='TEST-PASSWORD',
+            address='Adresse',
+            city='Abidjan',
+        )
+        admin = User.objects.create(
+            email='password@example.test',
+            first_name='Admin',
+            last_name='Test',
+            role=Role.ADMIN_ECOLE,
+            school=school,
+            must_change_password=True,
+            profile_completed=False,
+        )
+        temporary = 'Temporary!456'
+        admin.set_password(temporary)
+        admin.save()
+
+        self.client.logout()
+        self.client.post(reverse('authentication:login'), {
+            'username': admin.email,
+            'password': temporary,
+        })
+
+        response = self.client.post(reverse('authentication:change_password'), {
+            'temporary_password': 'wrong-temporary',
+            'new_password1': 'Zebra!4829Qx',
+            'new_password2': 'Zebra!4829Qx',
+        })
+        self.assertEqual(response.status_code, 200)
+        admin.refresh_from_db()
+        self.assertTrue(admin.must_change_password)
+        self.assertTrue(admin.check_password(temporary))
+        self.assertEqual(
+            response.context['form'].errors['temporary_password'][0],
+            'Le mot de passe temporaire est incorrect ou a déjà été invalidé.',
+        )
+
+    def test_super_admin_school_view_does_not_expose_temporary_credentials(self):
+        school = School.objects.create(
+            name='École visibilité',
+            code='TEST-VISIBILITY',
+            email='contact@visibilite.example',
+            address='Adresse',
+            city='Abidjan',
+        )
+        admin = User.objects.create(
+            email='login@visibilite.example',
+            first_name='Responsable',
+            last_name='École',
+            role=Role.ADMIN_ECOLE,
+            school=school,
+            must_change_password=True,
+        )
+        admin.set_password('Temporary!789')
+        admin.save()
+
+        response = self.client.get(reverse('schools:detail', args=[school.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, school.email)
+        self.assertNotContains(response, 'Temporary!789')
+        self.assertNotContains(response, admin.password)
+
+        users_page = self.client.get(reverse('users:list'))
+        self.assertEqual(users_page.status_code, 200)
+        self.assertNotContains(users_page, admin.email)

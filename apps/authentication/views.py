@@ -58,6 +58,9 @@ def logout_view(request):
 @login_required
 def change_password(request):
     """Force password change on first login."""
+    if not request.user.must_change_password:
+        return redirect('dashboard:index')
+
     if request.method == 'POST':
         form = ChangePasswordForm(request.user, request.POST)
         if form.is_valid():
@@ -71,6 +74,7 @@ def change_password(request):
                 password=password_hash,
                 must_change_password=False,
             )
+            request.session.pop('first_login_authenticated', None)
             user = User.objects.get(pk=user_id)
             update_session_auth_hash(request, user)
             log_action(user, 'UPDATE', "Changement de mot de passe", user)
@@ -84,6 +88,7 @@ def change_password(request):
     return render(request, 'auth/change_password.html', {
         'form': form,
         'is_forced': request.user.must_change_password,
+        'login_identifier': request.user.email,
     })
 
 

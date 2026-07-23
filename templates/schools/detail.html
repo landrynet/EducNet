@@ -58,7 +58,7 @@
         </div>
         <dl class="row small mb-0">
           <dt class="col-4">Téléphone</dt><dd class="col-8">{{ responsible.phone|default:"—" }}</dd>
-          <dt class="col-4">E-mail</dt><dd class="col-8">{{ responsible.email }}</dd>
+          <dt class="col-4">E-mail de contact</dt><dd class="col-8">{{ school.email|default:"—" }}</dd>
         </dl>
         {% else %}<p class="text-muted mb-0">Aucun responsable principal enregistré.</p>{% endif %}
       </div>

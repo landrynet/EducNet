@@ -41,6 +41,7 @@ def user_list(request):
         'search': search,
         'role_filter': role_filter,
         'roles': Role.choices,
+        'hide_login_identifiers': request.user.is_super_admin,
         'title': 'Gestion des utilisateurs',
     })
 
@@ -117,7 +118,7 @@ def user_toggle_active(request, pk):
 def user_detail(request, pk):
     """View a user's detail page (read-only)."""
     if request.user.is_super_admin:
-        user_obj = get_object_or_404(User, pk=pk)
+        user_obj = get_object_or_404(User, pk=pk, role=Role.ADMIN_ECOLE)
     else:
         user_obj = get_object_or_404(User, pk=pk, school=request.user.school)
 

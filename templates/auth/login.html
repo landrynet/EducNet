@@ -39,13 +39,15 @@
       <form method="post" novalidate>
         {% csrf_token %}
         <div class="mb-4">
-          <label class="form-label fw-semibold">Adresse email</label>
+          <label class="form-label fw-semibold">Identifiant</label>
           <div class="input-group input-group-lg">
             <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
             <input type="email" name="username" class="form-control border-start-0 ps-0"
-                   placeholder="votre@email.com" autofocus required
+                   placeholder="Votre e-mail / identifiant" autofocus required
+                   autocomplete="username"
                    value="{{ form.username.value|default:'' }}" />
           </div>
+          <div class="form-text">Utilisez l’identifiant transmis par l’administrateur de la plateforme.</div>
           {% if form.username.errors %}
           <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
           {% endif %}
@@ -57,7 +59,7 @@
             <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
             <input type="password" name="password" id="passwordInput"
                    class="form-control border-start-0 ps-0 border-end-0"
-                   placeholder="••••••••" required />
+                   placeholder="••••••••" autocomplete="current-password" required />
             <button class="btn btn-light border" type="button" id="togglePassword">
               <i class="bi bi-eye" id="toggleIcon"></i>
             </button>

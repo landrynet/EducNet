@@ -26,7 +26,7 @@
       <thead class="table-light">
         <tr>
           <th class="ps-4">Utilisateur</th>
-          <th>Email</th>
+          {% if not hide_login_identifiers %}<th>Email</th>{% endif %}
           <th>Rôle</th>
           {% if user.is_super_admin %}<th>École</th>{% endif %}
           <th>Statut</th>
@@ -50,7 +50,7 @@
               </div>
             </div>
           </td>
-          <td class="text-muted small">{{ u.email }}</td>
+          {% if not hide_login_identifiers %}<td class="text-muted small">{{ u.email }}</td>{% endif %}
           <td>
             <span class="badge
               {% if u.role == 'super_admin' %}bg-danger-subtle text-danger

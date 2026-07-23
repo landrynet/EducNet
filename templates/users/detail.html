@@ -114,10 +114,12 @@
             <div class="text-muted small">Nom</div>
             <div class="fw-medium">{{ user_obj.last_name|default:"—" }}</div>
           </div>
+          {% if not user.is_super_admin %}
           <div class="col-sm-6">
             <div class="text-muted small">Adresse email</div>
             <div class="fw-medium">{{ user_obj.email }}</div>
           </div>
+          {% endif %}
           <div class="col-sm-6">
             <div class="text-muted small">Téléphone</div>
             <div class="fw-medium">{{ user_obj.phone|default:"—" }}</div>
