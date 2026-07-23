@@ -304,6 +304,11 @@
   </div>
 </div>
 
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if can_manage %}
 <script>
 const DAY_LABELS = { {% for day_num, day_label in days %}'{{ day_num }}': '{{ day_label }}',{% endfor %} };
 const SLOT_TIMES = {};
