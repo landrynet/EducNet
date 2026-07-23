@@ -1,23 +1,180 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% block title %}Configuration initiale{% endblock %}
+{% block title %}Configuration initiale — Étape {{ step }}{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-xl-8">
-    <div class="mb-4"><h4 class="fw-bold">Configuration initiale</h4><div class="progress" style="height:8px"><div class="progress-bar" style="width:{% if step == 1 %}25{% elif step == 2 %}50{% else %}100{% endif %}%"></div></div><div class="d-flex justify-content-between small text-muted mt-2"><span class="{% if step == 1 %}fw-bold text-primary{% endif %}">Responsable</span><span class="{% if step == 2 %}fw-bold text-primary{% endif %}">Établissement</span><span class="{% if step == 3 %}fw-bold text-primary{% endif %}">Vérification</span></div></div>
-    <div class="card border-0 shadow-sm"><div class="card-body p-4">
-      {% if step == 1 %}
-      <h5 class="fw-bold">1. Informations du responsable</h5><p class="text-muted small">Complétez vos informations personnelles.</p>
-      <form method="post">{% csrf_token %}{{ form|crispy }}<button class="btn btn-primary">Continuer</button></form>
-      {% elif step == 2 %}
-      <h5 class="fw-bold">2. Informations de l’établissement</h5><p class="text-muted small">Confirmez et complétez les informations de votre école.</p>
-      <form method="post" enctype="multipart/form-data">{% csrf_token %}{{ form|crispy }}<button class="btn btn-primary">Continuer</button></form>
-      {% else %}
-      <h5 class="fw-bold">3. Vérification</h5><p class="text-muted">Vérifiez les informations avant de terminer.</p>
-      <div class="row g-3"><div class="col-md-6"><div class="bg-light rounded p-3"><h6>Responsable</h6><div>{{ user_obj.get_full_name }}</div><div>{{ user_obj.email }}</div><div>{{ user_obj.phone|default:"—" }}</div></div></div><div class="col-md-6"><div class="bg-light rounded p-3"><h6>Établissement</h6><div>{{ school.name }}</div><div>{{ school.address }}, {{ school.city }}</div><div>{{ school.email|default:"—" }}</div></div></div></div>
-      <form method="post" class="mt-4">{% csrf_token %}<button class="btn btn-success">Terminer la configuration</button></form>
-      {% endif %}
-    </div></div>
+<div class="onboarding-fullscreen">
+
+  <!-- Left panel -->
+  <div class="onboarding-panel-left">
+    <div class="onboarding-brand">
+      <div class="onboarding-brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
+      <h1 class="onboarding-brand-name">EduManager</h1>
+      <p class="onboarding-brand-tagline">Configuration de votre espace</p>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="onboarding-steps-nav mt-5">
+      <div class="onboarding-step-item {% if step >= 1 %}active{% endif %} {% if step > 1 %}done{% endif %}">
+        <div class="onboarding-step-dot">{% if step > 1 %}<i class="bi bi-check"></i>{% else %}1{% endif %}</div>
+        <div class="onboarding-step-label">
+          <div class="fw-semibold">Responsable</div>
+          <div class="small opacity-75">Vos informations personnelles</div>
+        </div>
+      </div>
+      <div class="onboarding-step-connector {% if step > 1 %}done{% endif %}"></div>
+      <div class="onboarding-step-item {% if step >= 2 %}active{% endif %} {% if step > 2 %}done{% endif %}">
+        <div class="onboarding-step-dot">{% if step > 2 %}<i class="bi bi-check"></i>{% else %}2{% endif %}</div>
+        <div class="onboarding-step-label">
+          <div class="fw-semibold">Établissement</div>
+          <div class="small opacity-75">Informations de l'école</div>
+        </div>
+      </div>
+      <div class="onboarding-step-connector {% if step > 2 %}done{% endif %}"></div>
+      <div class="onboarding-step-item {% if step >= 3 %}active{% endif %}">
+        <div class="onboarding-step-dot">3</div>
+        <div class="onboarding-step-label">
+          <div class="fw-semibold">Vérification</div>
+          <div class="small opacity-75">Confirmation finale</div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Right panel -->
+  <div class="onboarding-panel-right">
+    <div class="onboarding-form-card onboarding-form-card--wide">
+
+      <!-- Progress bar -->
+      <div class="onboarding-progress-bar mb-4">
+        <div class="onboarding-progress-fill"
+             style="width:{% if step == 1 %}33{% elif step == 2 %}66{% else %}100{% endif %}%"></div>
+      </div>
+
+      {% if step == 1 %}
+      <!-- ── STEP 1 ── -->
+      <div class="onboarding-step-badge"><i class="bi bi-person me-2"></i>Étape 1 sur 3</div>
+      <h2 class="onboarding-form-title">Vos informations</h2>
+      <p class="onboarding-form-subtitle">Complétez votre profil de responsable d'établissement.</p>
+      {% include 'partials/messages.html' %}
+      <form method="post" action="?step=1" novalidate>
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button type="submit" class="btn btn-primary">
+            Continuer <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </form>
+
+      {% elif step == 2 %}
+      <!-- ── STEP 2 ── -->
+      <div class="onboarding-step-badge"><i class="bi bi-building me-2"></i>Étape 2 sur 3</div>
+      <h2 class="onboarding-form-title">Votre établissement</h2>
+      <p class="onboarding-form-subtitle">Confirmez et complétez les informations de votre école.</p>
+      {% include 'partials/messages.html' %}
+      <form method="post" action="?step=2" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="d-flex justify-content-between mt-4">
+          <a href="?step=1" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Retour
+          </a>
+          <button type="submit" class="btn btn-primary">
+            Continuer <i class="bi bi-arrow-right ms-1"></i>
+          </button>
+        </div>
+      </form>
+
+      {% else %}
+      <!-- ── STEP 3 ── -->
+      <div class="onboarding-step-badge"><i class="bi bi-clipboard-check me-2"></i>Étape 3 sur 3</div>
+      <h2 class="onboarding-form-title">Vérification finale</h2>
+      <p class="onboarding-form-subtitle">Relisez les informations enregistrées avant de confirmer.</p>
+      {% include 'partials/messages.html' %}
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="onboarding-summary-card">
+            <div class="onboarding-summary-header">
+              <i class="bi bi-person-circle me-2"></i>Responsable
+            </div>
+            <div class="onboarding-summary-body">
+              <div class="fw-semibold">{{ user_obj.get_full_name }}</div>
+              <div class="text-muted small">{{ user_obj.email }}</div>
+              {% if user_obj.phone %}<div class="small">{{ user_obj.phone }}</div>{% endif %}
+              {% if user_obj.address %}<div class="small text-muted">{{ user_obj.address }}</div>{% endif %}
+            </div>
+            <a href="?step=1" class="onboarding-summary-edit">
+              <i class="bi bi-pencil me-1"></i>Modifier
+            </a>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="onboarding-summary-card">
+            <div class="onboarding-summary-header">
+              <i class="bi bi-building me-2"></i>Établissement
+            </div>
+            <div class="onboarding-summary-body">
+              <div class="fw-semibold">{{ school.name }}</div>
+              <div class="text-muted small">{{ school.get_school_type_display }}</div>
+              <div class="small">{{ school.address }}, {{ school.city }}</div>
+              {% if school.email %}<div class="small text-muted">{{ school.email }}</div>{% endif %}
+            </div>
+            <a href="?step=2" class="onboarding-summary-edit">
+              <i class="bi bi-pencil me-1"></i>Modifier
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms of Service -->
+      <div class="onboarding-tos-box">
+        <div class="onboarding-tos-title">
+          <i class="bi bi-file-text me-2"></i>Conditions d'utilisation
+        </div>
+        <div class="onboarding-tos-content">
+          <p>En utilisant EduManager, vous acceptez les conditions suivantes :</p>
+          <ul>
+            <li>Les données saisies (élèves, personnel, finances) sont placées sous votre responsabilité en tant qu'administrateur de l'établissement.</li>
+            <li>Vous vous engagez à respecter la confidentialité des données personnelles conformément à la législation en vigueur.</li>
+            <li>L'accès à la plateforme est strictement limité aux membres autorisés de votre établissement.</li>
+            <li>Toute utilisation frauduleuse ou abusive entraîne la résiliation immédiate du compte.</li>
+            <li>EduManager se réserve le droit de suspendre l'accès en cas de non-respect des présentes conditions.</li>
+          </ul>
+        </div>
+        <form method="post" action="?step=3" id="finish-form" novalidate>
+          {% csrf_token %}
+          <div class="onboarding-tos-check">
+            <input type="checkbox" class="form-check-input" id="tos_accepted" name="tos_accepted" required>
+            <label for="tos_accepted" class="form-check-label">
+              J'ai lu et j'accepte les conditions d'utilisation d'EduManager.
+            </label>
+          </div>
+          <div class="d-flex justify-content-between mt-4">
+            <a href="?step=2" class="btn btn-outline-secondary">
+              <i class="bi bi-arrow-left me-1"></i> Retour
+            </a>
+            <button type="submit" class="btn btn-success btn-lg" id="finish-btn" disabled>
+              <i class="bi bi-check2-all me-2"></i>Terminer la configuration
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if step == 3 %}
+document.getElementById('tos_accepted').addEventListener('change', function() {
+  document.getElementById('finish-btn').disabled = !this.checked;
+});
+{% endif %}
+</script>
 {% endblock %}

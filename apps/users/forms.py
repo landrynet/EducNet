@@ -98,5 +98,8 @@ class ProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Prénom et Nom sont obligatoires pour l'assistant de configuration
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Mettre à jour le profil', css_class='btn btn-primary'))

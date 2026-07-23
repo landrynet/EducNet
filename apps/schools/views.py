@@ -139,6 +139,30 @@ def school_credentials(request, pk):
 
 
 @login_required
+@role_required(['admin_ecole'])
+def school_settings(request):
+    """Allow the school admin to update their own school's information."""
+    school = request.user.school
+    if not school:
+        messages.error(request, "Votre compte n'est associé à aucun établissement.")
+        return redirect('dashboard:index')
+    if request.method == 'POST':
+        form = SchoolForm(request.POST, request.FILES, instance=school)
+        if form.is_valid():
+            form.save()
+            log_action(request.user, 'UPDATE', f"Paramètres école modifiés: {school.name}", school)
+            messages.success(request, "Paramètres enregistrés avec succès.")
+            return redirect('schools:settings')
+    else:
+        form = SchoolForm(instance=school)
+    return render(request, 'schools/settings.html', {
+        'form': form,
+        'school': school,
+        'title': "Paramètres de l'établissement",
+    })
+
+
+@login_required
 @role_required(['super_admin'])
 def school_toggle(request, pk):
     school = get_object_or_404(School, pk=pk)

@@ -30,6 +30,7 @@ SIDEBAR_MENUS = {
         {'icon': 'bi-folder', 'label': 'Documents', 'url': 'documents:index', 'args': []},
         {'icon': 'bi-bar-chart', 'label': 'Rapports & Stats', 'url': 'analytics:index', 'args': []},
         {'icon': 'bi-shield-check', 'label': 'Journal d\'audit', 'url': 'audit:list', 'args': []},
+        {'icon': 'bi-gear', 'label': 'Paramètres', 'url': 'schools:settings', 'args': []},
     ],
     Role.SECRETAIRE: [
         {'icon': 'bi-speedometer2', 'label': 'Tableau de bord', 'url': 'dashboard:index', 'args': []},

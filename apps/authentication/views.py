@@ -122,9 +122,18 @@ def setup(request):
         })
 
     if request.method == 'POST':
+        if not request.POST.get('tos_accepted'):
+            messages.error(request, "Vous devez accepter les conditions d'utilisation pour continuer.")
+            return render(request, 'auth/setup.html', {
+                'step': 3,
+                'school': request.user.school,
+                'user_obj': request.user,
+                'title': 'Vérification de la configuration',
+            })
         request.user.profile_completed = True
         request.user.save(update_fields=['profile_completed'])
-        messages.success(request, "Configuration terminée. Bienvenue dans votre espace.")
+        log_action(request.user, 'UPDATE', "Configuration initiale terminée", request.user)
+        messages.success(request, "Configuration terminée. Bienvenue dans votre espace !")
         return redirect('dashboard:index')
 
     return render(request, 'auth/setup.html', {

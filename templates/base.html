@@ -79,13 +79,27 @@
     </div>
 
     <div class="ms-auto d-flex align-items-center gap-3">
+      {% if request.path != '/auth/change-password/' and request.path != '/auth/setup/' %}
       <!-- Notifications placeholder -->
       <button class="btn btn-link p-0 position-relative text-secondary">
         <i class="bi bi-bell fs-5"></i>
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:.6rem;">3</span>
       </button>
+      {% endif %}
 
-      <!-- Profile dropdown -->
+      <!-- Profile area -->
+      {% if request.path == '/auth/change-password/' or request.path == '/auth/setup/' %}
+      <!-- During onboarding: show name only, no dropdown -->
+      <div class="d-flex align-items-center gap-2">
+        {% if user.photo %}
+        <img src="{{ user.photo.url }}" alt="{{ user.get_full_name }}" class="user-avatar-sm user-avatar-image">
+        {% else %}
+        <div class="user-avatar-sm">{{ user.initials }}</div>
+        {% endif %}
+        <span class="fw-medium small text-dark">{{ user.get_short_name }}</span>
+      </div>
+      {% else %}
+      <!-- Normal: full profile dropdown -->
       <div class="dropdown">
         <button class="btn btn-link p-0 d-flex align-items-center gap-2 text-dark text-decoration-none" data-bs-toggle="dropdown">
           {% if user.photo %}
@@ -106,6 +120,7 @@
           <li><a class="dropdown-item text-danger" href="{% url 'authentication:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Déconnexion</a></li>
         </ul>
       </div>
+      {% endif %}
     </div>
   </nav>
 

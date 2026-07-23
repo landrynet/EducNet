@@ -18,6 +18,13 @@ class SchoolForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Champs obligatoires explicites
+        for field in ('name', 'address', 'city', 'country'):
+            self.fields[field].required = True
+        # Le code ne peut pas être modifié après création
+        if self.instance and self.instance.pk:
+            self.fields['code'].disabled = True
+            self.fields['code'].help_text = "Le code ne peut pas être modifié après la création."
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset('Informations générales',
