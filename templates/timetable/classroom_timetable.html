@@ -324,7 +324,7 @@ const editModal = new bootstrap.Modal(document.getElementById('editModal'));
 
 /**
  * Populate a teacher <select> with the result of the teachers-by-subject API.
- * Shows a loading state while fetching.
+ * Auto-selects if only one teacher is available or if currentTeacherId is provided.
  */
 function loadTeachers(subjectId, selectEl, currentTeacherId) {
   if (!subjectId) {
@@ -343,7 +343,6 @@ function loadTeachers(subjectId, selectEl, currentTeacherId) {
       const opt = document.createElement('option');
       opt.value = t.pk;
       opt.textContent = t.name;
-      if (String(t.pk) === String(currentTeacherId)) opt.selected = true;
       selectEl.appendChild(opt);
     });
     if (!data.teachers.length) {
@@ -352,6 +351,12 @@ function loadTeachers(subjectId, selectEl, currentTeacherId) {
       opt.textContent = '— Aucun enseignant affecté —';
       opt.disabled = true;
       selectEl.appendChild(opt);
+    }
+    // Auto-select: use currentTeacherId if provided, else auto-fill if unique
+    if (currentTeacherId) {
+      selectEl.value = String(currentTeacherId);
+    } else if (data.teachers.length === 1) {
+      selectEl.value = String(data.teachers[0].pk);
     }
   })
   .catch(() => {
@@ -393,15 +398,22 @@ document.getElementById('editSubject').addEventListener('change', function() {
   loadTeachers(this.value, document.getElementById('editTeacher'), '');
 });
 
-// AJAX form submission
+// AJAX form submission — manages its own loading state (global handler skips modals)
 function submitForm(formId, alertId, modal) {
   const form = document.getElementById(formId);
   const alertEl = document.getElementById(alertId);
+
   form.addEventListener('submit', function(e) {
     e.preventDefault();
     alertEl.classList.add('d-none');
+
     const submitBtn = form.querySelector('[type=submit]');
-    if (submitBtn) { submitBtn.disabled = true; }
+    const originalHTML = submitBtn ? submitBtn.innerHTML : null;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Traitement...';
+    }
+
     const data = new FormData(form);
     fetch(form.action, {
       method: 'POST',
@@ -424,7 +436,12 @@ function submitForm(formId, alertId, modal) {
       alertEl.textContent = 'Erreur de communication avec le serveur.';
       alertEl.classList.remove('d-none');
     })
-    .finally(() => { if (submitBtn) { submitBtn.disabled = false; } });
+    .finally(() => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      }
+    });
   });
 }
 

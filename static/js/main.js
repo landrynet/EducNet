@@ -75,7 +75,9 @@ const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 tooltips.forEach(el => new bootstrap.Tooltip(el));
 
 // ── Form loading state ───────────────────────────────
+// Skip forms inside Bootstrap modals — they manage their own loading state
 document.querySelectorAll('form').forEach(form => {
+  if (form.closest('.modal')) return;
   form.addEventListener('submit', () => {
     const submitBtn = form.querySelector('[type="submit"]');
     if (submitBtn) {
