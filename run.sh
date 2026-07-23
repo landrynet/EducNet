@@ -202,6 +202,101 @@ ok "Configuration Django valide."
 
 log "Application des migrations..."
 
+repair_timetable_schema() {
+    python manage.py shell -c "
+from django.conf import settings
+from django.db import connection
+from pathlib import Path
+from shutil import copy2
+from datetime import datetime
+
+from apps.timetable.models import (
+    TimeSlot, TimetableSchedule, TimetableEntry, SchoolConfig,
+)
+
+models = [TimeSlot, TimetableSchedule, TimetableEntry, SchoolConfig]
+with connection.cursor() as cursor:
+    existing = set(connection.introspection.table_names(cursor))
+
+missing_models = [
+    model for model in models if model._meta.db_table not in existing
+]
+
+with connection.cursor() as cursor:
+    columns = {
+        model._meta.db_table: {
+            column.name for column in connection.introspection.get_table_description(
+                cursor, model._meta.db_table
+            )
+        }
+        for model in models
+        if model._meta.db_table in existing
+    }
+
+if not missing_models:
+    missing_fields = [
+        (model, field)
+        for model in models
+        for field in model._meta.local_fields
+        if not field.auto_created
+        and field.column not in columns.get(model._meta.db_table, set())
+    ]
+else:
+    missing_fields = []
+
+if not missing_models and not missing_fields:
+    print('Schéma timetable déjà complet, aucune modification nécessaire.')
+else:
+    database = Path(settings.DATABASES['default']['NAME'])
+    if database.exists():
+        backup = database.with_name(
+            database.name + '.before-timetable-repair-' +
+            datetime.now().strftime('%Y%m%d-%H%M%S') + '.bak'
+        )
+        copy2(database, backup)
+        print('Sauvegarde créée : ' + str(backup))
+
+    if missing_models:
+        print('Création des tables timetable manquantes : ' +
+              ', '.join(model._meta.db_table for model in missing_models))
+        with connection.schema_editor() as schema_editor:
+            for model in missing_models:
+                schema_editor.create_model(model)
+
+    with connection.cursor() as cursor:
+        existing = set(connection.introspection.table_names(cursor))
+
+    with connection.cursor() as cursor:
+        columns = {
+            model._meta.db_table: {
+                column.name for column in connection.introspection.get_table_description(
+                    cursor, model._meta.db_table
+                )
+            }
+            for model in models
+            if model._meta.db_table in existing
+        }
+
+    missing_fields = [
+        (model, field)
+        for model in models
+        for field in model._meta.local_fields
+        if not field.auto_created
+        and field.column not in columns.get(model._meta.db_table, set())
+    ]
+
+    if missing_fields:
+        print('Ajout des colonnes timetable manquantes : ' +
+              ', '.join(f'{model._meta.db_table}.{field.column}'
+                        for model, field in missing_fields))
+        with connection.schema_editor() as schema_editor:
+            for model, field in missing_fields:
+                schema_editor.add_field(model, field)
+
+    print('Schéma timetable réparé sans suppression de données.')
+"
+}
+
 MIGRATION_LOG="${TMPDIR:-/tmp}/edumanager-migrate-${RANDOM}.log"
 
 if python manage.py migrate --run-syncdb --fake-initial >"$MIGRATION_LOG" 2>&1; then
@@ -223,70 +318,7 @@ else
 
     rm -f "$MIGRATION_LOG"
 
-    # Certaines anciennes installations ont créé une partie des tables du
-    # module timetable avant l'ajout de ses migrations. On complète uniquement
-    # les tables absentes : les tables et les données existantes sont conservées.
-    # Une copie de sauvegarde est créée avant toute modification du schéma.
-    python manage.py shell -c "
-from django.conf import settings
-from django.db import connection
-from pathlib import Path
-from shutil import copy2
-from datetime import datetime
-
-from apps.timetable.models import TimeSlot, TimetableSchedule, TimetableEntry
-
-database = Path(settings.DATABASES['default']['NAME'])
-if database.exists():
-    backup = database.with_name(
-        database.name + '.before-timetable-repair-' +
-        datetime.now().strftime('%Y%m%d-%H%M%S') + '.bak'
-    )
-    copy2(database, backup)
-    print('Sauvegarde créée : ' + str(backup))
-
-models = [TimeSlot, TimetableSchedule, TimetableEntry]
-with connection.cursor() as cursor:
-    existing = set(connection.introspection.table_names(cursor))
-
-missing = [model for model in models if model._meta.db_table not in existing]
-if missing:
-    print('Création des tables timetable manquantes : ' +
-          ', '.join(model._meta.db_table for model in missing))
-    with connection.schema_editor() as schema_editor:
-        for model in missing:
-            schema_editor.create_model(model)
-
-    existing.update(model._meta.db_table for model in missing)
-
-with connection.cursor() as cursor:
-    columns = {
-        model._meta.db_table: {
-            column.name for column in connection.introspection.get_table_description(
-                cursor, model._meta.db_table
-            )
-        }
-        for model in models
-        if model._meta.db_table in existing
-    }
-
-missing_fields = [
-    (model, field)
-    for model in models
-    for field in model._meta.local_fields
-    if field.column not in columns.get(model._meta.db_table, set())
-]
-
-if missing_fields:
-    print('Ajout des colonnes timetable manquantes : ' +
-          ', '.join(f'{model._meta.db_table}.{field.column}'
-                    for model, field in missing_fields))
-    with connection.schema_editor() as schema_editor:
-        for model, field in missing_fields:
-            schema_editor.add_field(model, field)
-else:
-    print('Schéma timetable déjà complet, aucune modification nécessaire.')
-"
+    repair_timetable_schema
 
     warn "Schéma timetable réparé sans suppression de données. Marquage de timetable.0001 comme appliquée..."
     python manage.py migrate timetable 0001 --fake
@@ -308,6 +340,10 @@ sys.exit(0 if 'timetable_schoolconfig' in tables else 1)
 fi
 
 ok "Migrations terminées."
+
+# Django peut considérer les migrations comme appliquées alors qu'une ancienne
+# base contient encore un schéma incomplet. Vérifier aussi le chemin nominal.
+repair_timetable_schema
 
 # ── 4b. Tables M2M non-migrées (created by syncdb only on fresh DB) ──────────
 
