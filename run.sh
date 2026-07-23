@@ -202,7 +202,42 @@ ok "Configuration Django valide."
 
 log "Application des migrations..."
 
-python manage.py migrate --run-syncdb --fake-initial
+if ! python manage.py migrate --run-syncdb --fake-initial; then
+
+    warn "La migration standard a échoué. Vérification d'une ancienne base avec tables timetable existantes..."
+
+    # Certaines anciennes installations ont créé les tables du module
+    # timetable avant l'ajout de ses migrations. Dans ce cas, Django ne peut
+    # pas toujours détecter automatiquement une migration initiale partielle.
+    # On ne marque la migration comme appliquée que si ses trois tables sont
+    # déjà présentes : aucune donnée n'est supprimée ni recréée.
+    LEGACY_TIMETABLE_SCHEMA=$(python manage.py shell -c "
+from django.db import connection
+
+required = {
+    'timetable_timeslot',
+    'timetable_timetableschedule',
+    'timetable_timetableentry',
+}
+with connection.cursor() as cursor:
+    tables = set(connection.introspection.table_names(cursor))
+print('ready' if required.issubset(tables) else 'incomplete')
+" | tail -n 1)
+
+    if [ "$LEGACY_TIMETABLE_SCHEMA" = "ready" ]; then
+
+        warn "Tables timetable détectées. Marquage de timetable.0001 comme appliquée..."
+        python manage.py migrate timetable 0001 --fake
+        python manage.py migrate --run-syncdb --fake-initial
+
+    else
+
+        error "Le schéma timetable existant est incomplet. Migration interrompue pour protéger les données."
+        exit 1
+
+    fi
+
+fi
 
 ok "Migrations terminées."
 
