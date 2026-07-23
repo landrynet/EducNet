@@ -8,7 +8,7 @@ from apps.schools.models import School
 from apps.staff.models import StaffProfile
 from apps.users.models import Role, User
 
-from .forms import TimeSlotForm
+from .forms import TimeSlotForm, TimetableEntryForm
 from .models import SchoolConfig, TimeSlot, TimetableEntry, TimetableSchedule
 
 
@@ -92,6 +92,40 @@ class TimetableTestBase(TestCase):
 
 
 class TimetableValidationTests(TimetableTestBase):
+    def test_entry_form_only_lists_teachers_assigned_to_selected_subject(self):
+        other_subject = Subject.objects.create(
+            school=self.school_a, name='Français', code='FR',
+        )
+        self.classroom.subjects.add(other_subject)
+        form = TimetableEntryForm(
+            data={'subject': str(self.subject.pk)},
+            school=self.school_a,
+            classroom=self.classroom,
+        )
+        teacher_values = {str(value) for value, _ in form.fields['teacher'].choices}
+        self.assertIn(str(self.teacher.pk), teacher_values)
+        self.assertIn(str(self.other_teacher.pk), teacher_values)
+        self.assertNotIn(str(self.foreign_teacher.pk), teacher_values)
+
+        form = TimetableEntryForm(
+            data={'subject': str(other_subject.pk), 'teacher': str(self.teacher.pk)},
+            school=self.school_a,
+            classroom=self.classroom,
+        )
+        self.assertFalse(form.is_valid())
+
+    def test_teacher_detail_link_is_available_without_exposing_platform_user_list(self):
+        self._login(self.admin)
+        response = self.client.get(
+            reverse('staff:detail', args=[self.teacher_profile.pk])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse('users:detail', args=[self.teacher.pk]))
+
+        detail = self.client.get(reverse('users:detail', args=[self.teacher.pk]))
+        self.assertEqual(detail.status_code, 200)
+        self.assertContains(detail, self.teacher.email)
+
     def test_timeslot_overlap_is_rejected_only_within_same_school(self):
         form = TimeSlotForm(
             data={
@@ -196,6 +230,94 @@ class TimetableValidationTests(TimetableTestBase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('jour de cours', response.json()['errors'][0])
         self.assertEqual(TimetableEntry.objects.count(), 0)
+
+    def test_break_slot_cannot_receive_a_course(self):
+        break_slot = TimeSlot.objects.create(
+            school=self.school_a, name='Pause', start_time=time(10),
+            end_time=time(10, 30), slot_type='break', order=3,
+        )
+        self._login(self.secretary)
+        response = self.client.post(
+            reverse('timetable:entry_add', args=[self.classroom.pk]),
+            self._entry_data(timeslot_id=str(break_slot.pk)),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Créneau invalide', response.json()['errors'][0])
+        self.assertFalse(TimetableEntry.objects.filter(timeslot=break_slot).exists())
+
+    def test_add_edit_delete_entry_persists_without_deleting_timeslot(self):
+        self._login(self.secretary)
+        add_response = self.client.post(
+            reverse('timetable:entry_add', args=[self.classroom.pk]),
+            self._entry_data(),
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(add_response.status_code, 200)
+        entry = TimetableEntry.objects.get()
+        self.assertEqual(entry.subject, self.subject)
+
+        edit_response = self.client.post(
+            reverse('timetable:entry_edit', args=[entry.pk]),
+            {'subject': str(self.subject.pk), 'teacher': str(self.other_teacher.pk), 'room': 'Salle 9'},
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+        )
+        self.assertEqual(edit_response.status_code, 200)
+        entry.refresh_from_db()
+        self.assertEqual(entry.teacher, self.other_teacher)
+        self.assertEqual(entry.room, 'Salle 9')
+
+        delete_response = self.client.post(
+            reverse('timetable:entry_delete', args=[entry.pk]),
+        )
+        self.assertRedirects(
+            delete_response,
+            reverse('timetable:classroom_timetable', args=[self.classroom.pk]),
+        )
+        self.assertFalse(TimetableEntry.objects.filter(pk=entry.pk).exists())
+        self.assertTrue(TimeSlot.objects.filter(pk=self.slot.pk).exists())
+
+    def test_schedule_status_transitions_are_persisted(self):
+        self._login(self.secretary)
+        url = reverse('timetable:schedule_publish', args=[self.classroom.pk])
+        for action, expected in (
+            ('draft', 'draft'),
+            ('preparing', 'preparing'),
+            ('published', 'published'),
+        ):
+            response = self.client.post(url, {'action': action})
+            self.assertRedirects(
+                response,
+                reverse('timetable:classroom_timetable', args=[self.classroom.pk]),
+            )
+            schedule = TimetableSchedule.objects.get(classroom=self.classroom)
+            self.assertEqual(schedule.status, expected)
+            page = self.client.get(
+                reverse('timetable:classroom_timetable', args=[self.classroom.pk])
+            )
+            self.assertContains(page, schedule.get_status_display())
+        self.client.logout()
+        self._login(self.secretary)
+        page = self.client.get(
+            reverse('timetable:classroom_timetable', args=[self.classroom.pk])
+        )
+        self.assertContains(page, 'Publié')
+
+    def test_only_secretary_can_change_status_or_entries(self):
+        self._login(self.admin)
+        status_response = self.client.post(
+            reverse('timetable:schedule_publish', args=[self.classroom.pk]),
+            {'action': 'published'},
+        )
+        self.assertRedirects(status_response, reverse('dashboard:index'))
+        self.assertFalse(TimetableSchedule.objects.filter(classroom=self.classroom).exists())
+
+        entry_response = self.client.post(
+            reverse('timetable:entry_add', args=[self.classroom.pk]),
+            self._entry_data(),
+        )
+        self.assertRedirects(entry_response, reverse('dashboard:index'))
+        self.assertFalse(TimetableEntry.objects.exists())
 
 
 class TimetablePermissionsAndOutputTests(TimetableTestBase):

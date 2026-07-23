@@ -5,6 +5,7 @@ from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -553,26 +554,26 @@ def entry_add(request, classroom_id):
 
         teacher = User.objects.filter(pk=teacher_id, school=school).first() if teacher_id else None
 
-        entry = TimetableEntry.objects.create(
-            school=school,
-            classroom=classroom,
-            subject=subject,
-            teacher=teacher,
-            day=day,
-            timeslot=timeslot,
-            room=room,
-        )
-
-        # Advance schedule status to "preparing" if still draft
-        sched, _ = TimetableSchedule.objects.get_or_create(
-            school=school, classroom=classroom,
-            defaults={'created_by': request.user}
-        )
-        if sched.status == 'draft':
-            sched.status = 'preparing'
-            sched.save()
+        try:
+            with transaction.atomic():
+                entry = TimetableEntry.objects.create(
+                    school=school,
+                    classroom=classroom,
+                    subject=subject,
+                    teacher=teacher,
+                    day=day,
+                    timeslot=timeslot,
+                    room=room,
+                )
+        except IntegrityError:
+            errors = ["Cette classe a déjà un cours sur ce créneau."]
+            if is_ajax:
+                return JsonResponse({'ok': False, 'errors': errors}, status=409)
+            messages.error(request, errors[0])
+            return redirect('timetable:classroom_timetable', classroom_id=classroom_id)
 
         log_action(request.user, 'CREATE', f"Cours ajouté: {entry}", entry)
+        messages.success(request, "Cours ajouté.")
 
         if is_ajax:
             return JsonResponse({
@@ -588,7 +589,6 @@ def entry_add(request, classroom_id):
                 }
             })
 
-        messages.success(request, "Cours ajouté.")
         return redirect('timetable:classroom_timetable', classroom_id=classroom_id)
 
     return redirect('timetable:classroom_timetable', classroom_id=classroom_id)
@@ -645,12 +645,21 @@ def entry_edit(request, pk):
 
         teacher = User.objects.filter(pk=teacher_id, school=school).first() if teacher_id else None
 
-        entry.subject = subject
-        entry.teacher = teacher
-        entry.room = room
-        entry.save()
+        try:
+            with transaction.atomic():
+                entry.subject = subject
+                entry.teacher = teacher
+                entry.room = room
+                entry.save(update_fields=['subject', 'teacher', 'room'])
+        except IntegrityError:
+            errors = ["Cette classe a déjà un cours sur ce créneau."]
+            if is_ajax:
+                return JsonResponse({'ok': False, 'errors': errors}, status=409)
+            messages.error(request, errors[0])
+            return redirect('timetable:classroom_timetable', classroom_id=entry.classroom_id)
 
         log_action(request.user, 'UPDATE', f"Cours modifié: {entry}", entry)
+        messages.success(request, "Cours modifié.")
 
         if is_ajax:
             return JsonResponse({
@@ -666,7 +675,6 @@ def entry_edit(request, pk):
                 }
             })
 
-        messages.success(request, "Cours modifié.")
         return redirect('timetable:classroom_timetable', classroom_id=entry.classroom_id)
 
     # GET: return entry data for the modal
@@ -696,13 +704,14 @@ def entry_delete(request, pk):
     entry = get_object_or_404(TimetableEntry, pk=pk, school=school)
     classroom_id = entry.classroom_id
     label = str(entry)
-    entry.delete()
+    with transaction.atomic():
+        entry.delete()
     log_action(request.user, 'DELETE', f"Cours supprimé: {label}")
+    messages.success(request, "Cours supprimé.")
 
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({'ok': True})
 
-    messages.success(request, "Cours supprimé.")
     return redirect('timetable:classroom_timetable', classroom_id=classroom_id)
 
 
@@ -715,26 +724,27 @@ def schedule_publish(request, classroom_id):
     """Change the publication status of a classroom's timetable."""
     school = _get_school(request)
     classroom = get_object_or_404(Classroom, pk=classroom_id, school=school)
-    action = request.POST.get('action', 'publish')
+    action = request.POST.get('action', '')
+    status = {'publish': 'published', 'published': 'published'}.get(action, action)
+    if status not in {'draft', 'preparing', 'published'}:
+        messages.error(request, "Statut d'emploi du temps invalide.")
+        return redirect('timetable:classroom_timetable', classroom_id=classroom_id)
 
-    sched, _ = TimetableSchedule.objects.get_or_create(
-        school=school, classroom=classroom,
-        defaults={'created_by': request.user}
+    with transaction.atomic():
+        sched, _ = TimetableSchedule.objects.select_for_update().get_or_create(
+            school=school,
+            classroom=classroom,
+            defaults={'created_by': request.user},
+        )
+        sched.status = status
+        sched.published_at = timezone.now() if status == 'published' else None
+        sched.save(update_fields=['status', 'published_at', 'updated_at'])
+
+    log_action(request.user, 'UPDATE', f"Statut emploi du temps: {classroom.name} → {status}", sched)
+    messages.success(
+        request,
+        f"L'emploi du temps de {classroom.name} est maintenant « {sched.get_status_display()} ».",
     )
-
-    if action == 'publish':
-        sched.publish(user=request.user)
-        log_action(request.user, 'UPDATE', f"Emploi du temps publié: {classroom.name}", sched)
-        messages.success(request, f"L'emploi du temps de {classroom.name} est publié.")
-    elif action == 'draft':
-        sched.status = 'draft'
-        sched.published_at = None
-        sched.save()
-        messages.info(request, f"L'emploi du temps de {classroom.name} est repassé en brouillon.")
-    elif action == 'preparing':
-        sched.status = 'preparing'
-        sched.save()
-        messages.info(request, "Statut mis à jour : En préparation.")
 
     return redirect('timetable:classroom_timetable', classroom_id=classroom_id)
 

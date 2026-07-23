@@ -65,8 +65,11 @@ class TimetableEntryForm(forms.Form):
     )
 
     def __init__(self, *args, school=None, classroom=None, **kwargs):
+        self.school = school
+        self.classroom = classroom
         super().__init__(*args, **kwargs)
         from apps.academic.models import Subject
+        from apps.staff.models import StaffProfile
         from apps.users.models import User, Role
 
         # Subjects linked to this classroom
@@ -78,8 +81,50 @@ class TimetableEntryForm(forms.Form):
             (s.pk, s.name) for s in subjects
         ]
 
-        # Teachers of this school
-        teachers = User.objects.filter(school=school, role=Role.ENSEIGNANT, is_active=True)
+        # Only teachers assigned to the selected subject may be submitted.
+        # Rebuild this queryset from the submitted subject as well as the
+        # initial value so tampered requests cannot broaden the choices.
+        subject_id = self.data.get('subject') if self.is_bound else self.initial.get('subject')
+        subject = subjects.filter(pk=subject_id).first() if subject_id else None
+        teacher_pks = (
+            StaffProfile.objects.filter(
+                school=school,
+                staff_type='teacher',
+                is_active=True,
+                user__school=school,
+                user__role=Role.ENSEIGNANT,
+                user__is_active=True,
+                subjects=subject,
+            ).values_list('user_id', flat=True)
+            if subject else []
+        )
+        teachers = User.objects.filter(pk__in=teacher_pks).order_by('last_name', 'first_name')
         self.fields['teacher'].choices = [('', '— Aucun enseignant —')] + [
             (t.pk, t.get_full_name()) for t in teachers
         ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        subject_id = cleaned_data.get('subject')
+        teacher_id = cleaned_data.get('teacher')
+        if subject_id and teacher_id:
+            from apps.academic.models import Subject
+            from apps.staff.models import StaffProfile
+            from apps.users.models import User, Role
+
+            subject = Subject.objects.filter(
+                pk=subject_id,
+                school=self.school,
+            ).first()
+            teacher = User.objects.filter(
+                pk=teacher_id, school=self.school, role=Role.ENSEIGNANT,
+                is_active=True,
+            ).first()
+            if not subject or not teacher or not StaffProfile.objects.filter(
+                user=teacher, school=self.school, staff_type='teacher',
+                is_active=True, subjects=subject,
+            ).exists():
+                raise forms.ValidationError(
+                    "L'enseignant sélectionné n'est pas affecté à cette matière."
+                )
+        return cleaned_data

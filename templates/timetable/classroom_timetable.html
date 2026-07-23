@@ -78,7 +78,7 @@
           <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
             {% csrf_token %}<input type="hidden" name="action" value="publish">
             <button class="dropdown-item {% if schedule.status == 'published' %}active{% endif %}">
-              <i class="bi bi-check-circle me-2"></i>Publier
+              <i class="bi bi-check-circle me-2"></i>Publié
             </button>
           </form>
         </li>
@@ -226,10 +226,7 @@
           <div class="mb-3">
             <label class="form-label fw-medium">Enseignant</label>
             <select name="teacher" class="form-select" id="addTeacher">
-              <option value="">— Aucun —</option>
-              {% for t in teachers %}
-              <option value="{{ t.pk }}">{{ t.get_full_name }}</option>
-              {% endfor %}
+              <option value="">— Choisir d'abord une matière —</option>
             </select>
           </div>
 
@@ -278,10 +275,7 @@
           <div class="mb-3">
             <label class="form-label fw-medium">Enseignant</label>
             <select name="teacher" class="form-select" id="editTeacher">
-              <option value="">— Aucun —</option>
-              {% for t in teachers %}
-              <option value="{{ t.pk }}">{{ t.get_full_name }}</option>
-              {% endfor %}
+              <option value="">— Choisir d'abord une matière —</option>
             </select>
           </div>
 
@@ -336,9 +330,12 @@ function loadTeachers(subjectId, selectEl, currentTeacherId) {
   fetch(TEACHERS_URL(subjectId), {
     headers: { 'X-Requested-With': 'XMLHttpRequest' }
   })
-  .then(r => r.json())
+  .then(r => {
+    if (!r.ok) throw new Error('teacher-load-failed');
+    return r.json();
+  })
   .then(data => {
-    selectEl.innerHTML = '<option value="">— Aucun —</option>';
+    selectEl.innerHTML = '<option value="">— Choisir un enseignant —</option>';
     data.teachers.forEach(t => {
       const opt = document.createElement('option');
       opt.value = t.pk;
@@ -348,7 +345,7 @@ function loadTeachers(subjectId, selectEl, currentTeacherId) {
     if (!data.teachers.length) {
       const opt = document.createElement('option');
       opt.value = '';
-      opt.textContent = '— Aucun enseignant affecté —';
+      opt.textContent = '— Aucun enseignant affecté à cette matière —';
       opt.disabled = true;
       selectEl.appendChild(opt);
     }

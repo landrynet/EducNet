@@ -1,0 +1,636 @@
+Voici le **prompt complet de stabilisation**, propre et précis :
+
+```text
+PROMPT — STABILISATION COMPLÈTE DU MODULE EMPLOI DU TEMPS
+
+Continuer la stabilisation du système existant sans casser les fonctionnalités déjà fonctionnelles.
+
+Ne pas commencer un nouveau module.
+
+L'objectif est de corriger les problèmes de fonctionnement intermittent et de finaliser proprement le module Emploi du temps.
+
+==================================================
+1. STATUT DE L'EMPLOI DU TEMPS
+==================================================
+
+Actuellement, seul le statut "Brouillon" semble fonctionner correctement.
+
+Le système doit gérer les statuts suivants :
+
+- Brouillon
+- Préparation
+- Publié
+
+Le Secrétaire doit pouvoir modifier le statut d'un emploi du temps.
+
+Le changement doit être :
+
+- enregistré réellement en base de données ;
+- visible immédiatement dans l'interface ;
+- conservé après actualisation de la page ;
+- conservé après déconnexion et reconnexion.
+
+Flux attendu :
+
+Brouillon
+    ↓
+Préparation
+    ↓
+Publié
+
+Le système doit également permettre de modifier le statut selon la logique métier prévue.
+
+Ne jamais afficher un statut différent de celui réellement enregistré en base de données.
+
+Lorsqu'un statut est modifié :
+
+1. L'utilisateur sélectionne le nouveau statut.
+2. Il valide.
+3. Le backend vérifie la permission.
+4. La modification est enregistrée en base.
+5. L'interface affiche le nouveau statut.
+6. Un message de succès est affiché uniquement si l'opération a réellement réussi.
+
+En cas d'échec :
+
+- ne pas afficher de faux message de succès ;
+- afficher une erreur claire ;
+- conserver l'ancien statut.
+
+==================================================
+2. AJOUT D'UN COURS
+==================================================
+
+Le bouton "+" dans une case vide doit fonctionner de manière fiable.
+
+Flux attendu :
+
+Classe
+    ↓
+Créneau
+    ↓
+Matière de la classe
+    ↓
+Enseignant lié à la matière
+    ↓
+Enregistrement du cours
+
+Lors de l'ajout :
+
+- la classe doit être correctement identifiée ;
+- le jour doit être correctement identifié ;
+- le créneau horaire doit être correctement identifié ;
+- l'école doit être correctement identifiée.
+
+Le formulaire doit réellement enregistrer le cours dans la base de données.
+
+Après l'enregistrement :
+
+- le cours doit apparaître dans la grille ;
+- la page doit être actualisée correctement ;
+- un message de succès doit apparaître uniquement après une vraie sauvegarde.
+
+==================================================
+3. MATIÈRES UNIQUEMENT DE LA CLASSE CONCERNÉE
+==================================================
+
+Lors de l'ajout ou de la modification d'un cours, ne proposer que les matières affectées à la classe sélectionnée.
+
+Exemple :
+
+Classe : 4ème A
+
+Matières disponibles :
+
+- Mathématiques ;
+- Français ;
+- Anglais.
+
+Une matière qui n'est pas affectée à cette classe ne doit jamais être proposée.
+
+Cette règle doit être appliquée :
+
+- dans l'interface ;
+- dans le formulaire ;
+- dans le backend.
+
+Le backend doit empêcher toute tentative de créer un emploi du temps avec une matière qui n'appartient pas à la classe.
+
+==================================================
+4. ENSEIGNANT LIÉ À LA MATIÈRE
+==================================================
+
+Lors de l'ajout d'un cours, l'enseignant doit être automatiquement déterminé à partir de la matière sélectionnée.
+
+La matière est déjà liée à un ou plusieurs enseignants.
+
+Le fonctionnement attendu est :
+
+Classe
+    ↓
+Matières affectées à la classe
+    ↓
+Sélection de la matière
+    ↓
+Enseignant(s) lié(s) à cette matière
+    ↓
+Enregistrement
+
+Après la sélection de la matière :
+
+- ne pas afficher tous les enseignants de l'école ;
+- afficher uniquement les enseignants liés à cette matière.
+
+Si un seul enseignant est lié à la matière :
+
+- le sélectionner automatiquement.
+
+Si plusieurs enseignants sont liés à la matière :
+
+- afficher uniquement ces enseignants ;
+- permettre la sélection parmi eux.
+
+Le système doit vérifier côté backend que l'enseignant sélectionné est réellement lié à la matière.
+
+Ne jamais permettre :
+
+- un enseignant d'une autre matière ;
+- un enseignant d'une autre école ;
+- un enseignant non lié à la matière.
+
+==================================================
+5. MODIFICATION D'UN COURS
+==================================================
+
+Le bouton "Modifier" doit toujours fonctionner.
+
+Lorsqu'un cours existe :
+
+- afficher une action Modifier pour les utilisateurs autorisés.
+
+Le Secrétaire doit pouvoir modifier :
+
+- la matière ;
+- l'enseignant compatible ;
+- la salle si applicable ;
+- les informations prévues par le modèle.
+
+Lors de la modification :
+
+- afficher uniquement les matières de la classe ;
+- filtrer automatiquement les enseignants liés à la matière ;
+- vérifier les conflits ;
+- enregistrer réellement les changements.
+
+Après sauvegarde :
+
+- la nouvelle information doit apparaître immédiatement ;
+- la modification doit rester après actualisation de la page.
+
+==================================================
+6. SUPPRESSION D'UN COURS
+==================================================
+
+Le bouton "Supprimer" doit toujours fonctionner.
+
+Lorsqu'un cours existe :
+
+1. Cliquer sur Supprimer.
+2. Afficher une confirmation.
+3. Confirmer.
+4. Supprimer réellement le cours.
+5. Actualiser la grille.
+
+Après suppression :
+
+- le cours doit disparaître ;
+- le créneau horaire doit rester ;
+- la classe doit rester ;
+- la matière doit rester ;
+- le bouton "+" doit réapparaître.
+
+Ne jamais supprimer le créneau horaire lui-même lors de la suppression d'un cours.
+
+==================================================
+7. CORRIGER LES ACTIONS QUI FONCTIONNENT PARFOIS
+==================================================
+
+Actuellement, certaines actions fonctionnent parfois et parfois non :
+
+- Ajouter ;
+- Modifier ;
+- Supprimer ;
+- Modifier le statut.
+
+Analyser la cause réelle.
+
+Vérifier complètement :
+
+- les URLs ;
+- les vues ;
+- les formulaires ;
+- les méthodes GET et POST ;
+- les boutons ;
+- les paramètres envoyés ;
+- les IDs utilisés ;
+- le JavaScript ;
+- les redirections ;
+- les permissions ;
+- les validations ;
+- les transactions de base de données ;
+- les messages de succès ;
+- les messages d'erreur.
+
+Chaque action doit avoir un fonctionnement fiable et déterministe.
+
+Une action ne doit jamais :
+
+- sembler fonctionner sans enregistrer ;
+- afficher un succès sans modification réelle ;
+- échouer silencieusement ;
+- fonctionner uniquement après plusieurs clics ;
+- dépendre d'un rechargement manuel inattendu.
+
+==================================================
+8. DÉTECTION DES CONFLITS
+==================================================
+
+Conserver et vérifier les règles suivantes :
+
+CONFLIT DE CLASSE :
+
+Une classe ne peut pas avoir deux cours au même moment.
+
+CONFLIT D'ENSEIGNANT :
+
+Un enseignant ne peut pas enseigner deux classes au même moment.
+
+CONFLIT DE SALLE :
+
+Une salle ne peut pas être utilisée par deux classes au même moment.
+
+Afficher un message d'erreur clair.
+
+Ne pas enregistrer l'opération en cas de conflit.
+
+==================================================
+9. GESTION DES CRÉNEAUX ET PAUSES
+==================================================
+
+Le système doit distinguer :
+
+- Cours ;
+- Pause.
+
+Un créneau de type Pause ne doit pas permettre l'ajout d'un cours.
+
+Les créneaux de type Cours doivent permettre l'ajout d'un cours.
+
+Vérifier que :
+
+- les pauses sont correctement affichées ;
+- le bouton "+" n'apparaît pas sur une pause ;
+- les cours peuvent être ajoutés uniquement sur les créneaux appropriés.
+
+==================================================
+10. PERMISSIONS
+==================================================
+
+SECRÉTAIRE :
+
+Peut :
+
+- configurer les horaires ;
+- configurer les pauses ;
+- ajouter un cours ;
+- modifier un cours ;
+- supprimer un cours ;
+- modifier le statut de l'emploi du temps.
+
+DIRECTEUR / PRÉFET :
+
+Consultation uniquement.
+
+Il peut :
+
+- consulter l'emploi du temps ;
+- voir les informations.
+
+Il ne peut pas :
+
+- ajouter ;
+- modifier ;
+- supprimer ;
+- configurer ;
+- modifier le statut.
+
+ENSEIGNANT :
+
+Peut :
+
+- consulter son emploi du temps ;
+- voir ses classes ;
+- voir ses matières ;
+- télécharger ;
+- imprimer.
+
+Il ne peut pas modifier l'emploi du temps.
+
+Les utilisateurs qui n'ont pas accès au module ne doivent pas voir le module dans la sidebar.
+
+Les boutons d'action doivent être masqués pour les utilisateurs sans permission.
+
+==================================================
+11. PAGES DE DÉTAIL DES UTILISATEURS
+==================================================
+
+Le système doit disposer d'une vraie page de détail pour les utilisateurs.
+
+Dans les listes d'utilisateurs, ajouter un bouton :
+
+"Voir le détail"
+
+La page doit afficher uniquement les informations autorisées :
+
+- nom complet ;
+- adresse e-mail si autorisée ;
+- téléphone si disponible ;
+- rôle ;
+- école associée ;
+- statut du compte ;
+- informations professionnelles autorisées.
+
+Ne jamais afficher :
+
+- mot de passe ;
+- mot de passe temporaire ;
+- hash du mot de passe ;
+- informations sensibles non autorisées.
+
+Ajouter un bouton :
+
+"Retour"
+
+==================================================
+12. PAGE DE DÉTAIL DE L'ENSEIGNANT
+==================================================
+
+La page de détail d'un enseignant doit afficher ses informations professionnelles.
+
+Ajouter une section :
+
+"Compte utilisateur associé"
+
+Si un compte utilisateur est associé à l'enseignant, afficher :
+
+- nom de l'utilisateur ;
+- identifiant autorisé ;
+- e-mail si autorisé ;
+- rôle ;
+- statut du compte.
+
+Ajouter un bouton :
+
+"Voir le profil utilisateur"
+
+Le bouton doit rediriger vers la page de détail de l'utilisateur.
+
+Flux attendu :
+
+Enseignant
+    ↓
+Détail enseignant
+    ↓
+Compte utilisateur associé
+    ↓
+Voir le profil utilisateur
+    ↓
+Détail utilisateur
+
+Si aucun compte n'est associé :
+
+"Aucun compte utilisateur associé"
+
+Ne pas afficher de lien cassé.
+
+==================================================
+13. ORGANISATION — NIVEAUX
+==================================================
+
+Dans le module Organisation, ne pas afficher de section permettant de créer ou gérer directement les "Niveaux" si cette fonctionnalité n'est pas prévue dans l'interface actuelle.
+
+Retirer cette section :
+
+- de la page concernée ;
+- de la navigation ;
+- de la sidebar si elle y apparaît.
+
+Ne pas supprimer inutilement les données existantes.
+
+Ne pas casser les relations existantes entre :
+
+- école ;
+- niveau ;
+- classe.
+
+Retirer uniquement l'accès ou l'interface non souhaitée.
+
+==================================================
+14. ISOLATION MULTI-SITE
+==================================================
+
+Vérifier que chaque école voit uniquement ses propres données :
+
+- classes ;
+- matières ;
+- enseignants ;
+- salles ;
+- créneaux ;
+- emplois du temps ;
+- utilisateurs.
+
+Tester également les accès directs par URL.
+
+Un utilisateur d'une école ne doit jamais pouvoir accéder aux données d'une autre école en modifiant simplement un identifiant dans l'URL.
+
+==================================================
+15. SCRIPT DE DONNÉES DE TEST
+==================================================
+
+Utiliser le script central de données de test déjà présent dans le projet.
+
+Ne pas créer un système parallèle.
+
+Le script doit respecter :
+
+École
+    ↓
+Classe
+    ↓
+Matières affectées à la classe
+    ↓
+Enseignants liés aux matières
+    ↓
+Emploi du temps
+
+Le script doit :
+
+- être réexécutable ;
+- éviter les doublons ;
+- préserver les données existantes ;
+- ajouter uniquement les données nécessaires ;
+- respecter les relations réelles.
+
+Ne jamais :
+
+- associer une matière à une classe qui ne l'a pas ;
+- associer un enseignant à une matière qu'il n'enseigne pas ;
+- créer des données d'une autre école ;
+- créer des doublons.
+
+==================================================
+16. TESTS FONCTIONNELS OBLIGATOIRES
+==================================================
+
+Tester :
+
+1. Connexion.
+2. Accès au module.
+3. Affichage de la grille.
+4. Bouton "+".
+5. Ajout d'un cours.
+6. Filtrage des matières par classe.
+7. Remplissage automatique de l'enseignant.
+8. Modification d'un cours.
+9. Suppression d'un cours.
+10. Confirmation de suppression.
+11. Passage de Brouillon à Préparation.
+12. Passage de Préparation à Publié.
+13. Modification du statut.
+14. Persistance du statut après actualisation.
+15. Conflit de classe.
+16. Conflit d'enseignant.
+17. Conflit de salle.
+18. Configuration des horaires.
+19. Configuration des pauses.
+20. Consultation Directeur / Préfet.
+21. Consultation Enseignant.
+22. Téléchargement.
+23. Impression.
+24. Isolation Multi-Site.
+25. Page détail utilisateur.
+26. Page détail enseignant.
+27. Lien enseignant vers utilisateur.
+28. Cas sans compte utilisateur.
+29. Protection des informations sensibles.
+30. Retrait de la section Niveau.
+31. Réexécution du script de données de test.
+
+==================================================
+17. VÉRIFICATION TECHNIQUE
+==================================================
+
+Exécuter les vérifications nécessaires :
+
+python manage.py check
+
+python manage.py showmigrations
+
+python manage.py makemigrations --check
+
+Vérifier :
+
+- erreurs de migration ;
+- erreurs de base de données ;
+- erreurs de template ;
+- erreurs JavaScript ;
+- erreurs de permission ;
+- erreurs de relations.
+
+Ne pas supprimer la base de données.
+
+Ne pas modifier inutilement les migrations existantes.
+
+Ne pas casser les fonctionnalités déjà fonctionnelles.
+
+==================================================
+18. OBJECTIF FINAL
+==================================================
+
+La stabilisation est terminée uniquement lorsque :
+
+- Ajouter fonctionne toujours ;
+- Modifier fonctionne toujours ;
+- Supprimer fonctionne toujours ;
+- le statut fonctionne réellement ;
+- les statuts Brouillon, Préparation et Publié fonctionnent ;
+- les matières sont filtrées par classe ;
+- l'enseignant est automatiquement lié à la matière ;
+- les conflits sont détectés ;
+- les permissions sont respectées ;
+- l'isolation Multi-Site fonctionne ;
+- les pages de détail fonctionnent ;
+- le lien Enseignant → Utilisateur fonctionne ;
+- la section Niveau non souhaitée est retirée ;
+- le script de données de test fonctionne ;
+- aucune action ne fonctionne "parfois".
+
+==================================================
+19. RAPPORT FINAL OBLIGATOIRE
+==================================================
+
+À la fin, fournir un rapport :
+
+STATUTS :
+OK / PROBLÈMES
+
+AJOUT D'UN COURS :
+OK / PROBLÈMES
+
+MODIFICATION :
+OK / PROBLÈMES
+
+SUPPRESSION :
+OK / PROBLÈMES
+
+MATIÈRES PAR CLASSE :
+OK / PROBLÈMES
+
+ENSEIGNANT AUTOMATIQUE :
+OK / PROBLÈMES
+
+CONFLITS :
+OK / PROBLÈMES
+
+PERMISSIONS :
+OK / PROBLÈMES
+
+MULTI-SITE :
+OK / PROBLÈMES
+
+PAGE DÉTAIL UTILISATEUR :
+OK / PROBLÈMES
+
+PAGE DÉTAIL ENSEIGNANT :
+OK / PROBLÈMES
+
+LIEN ENSEIGNANT → UTILISATEUR :
+OK / PROBLÈMES
+
+SECTION NIVEAU :
+OK / PROBLÈMES
+
+DONNÉES DE TEST :
+OK / PROBLÈMES
+
+MIGRATIONS :
+OK / PROBLÈMES
+
+TESTS :
+RÉUSSIS / ÉCHECS
+
+STATUT FINAL :
+STABLE / PROBLÈMES RESTANTS
+```
+
+**Priorité absolue :** ne pas simplement modifier l'apparence. Il faut vérifier que chaque action est réellement enregistrée en base de données et fonctionne de manière fiable après plusieurs essais et après actualisation de la page.

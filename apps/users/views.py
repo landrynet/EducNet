@@ -118,7 +118,14 @@ def user_toggle_active(request, pk):
 def user_detail(request, pk):
     """View a user's detail page (read-only)."""
     if request.user.is_super_admin:
-        user_obj = get_object_or_404(User, pk=pk, role=Role.ADMIN_ECOLE)
+        # The platform view is intentionally limited to school administrators
+        # and teachers reached from an authorized staff detail page. It never
+        # exposes the complete internal user list.
+        user_obj = get_object_or_404(
+            User,
+            pk=pk,
+            role__in=[Role.ADMIN_ECOLE, Role.ENSEIGNANT],
+        )
     else:
         user_obj = get_object_or_404(User, pk=pk, school=request.user.school)
 
