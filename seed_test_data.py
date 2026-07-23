@@ -128,7 +128,7 @@ def create_school_users(school, prefix):
 
 
 def create_academic_data(school):
-    """Create academic years, levels, classrooms, and subjects."""
+    """Create academic years, levels, classrooms, subjects, and their associations."""
     try:
         from apps.academic.models import AcademicYear, Level, Classroom, Subject
 
@@ -156,41 +156,62 @@ def create_academic_data(school):
             )
             level_objects.append(level_obj)
 
-        # Classrooms
+        # Subjects (with colours and coefficients)
+        subject_data = [
+            ('Mathématiques',                   'MATH',  '#4e73df', 4),
+            ('Français',                         'FR',    '#1cc88a', 4),
+            ('Histoire-Géographie',              'HG',    '#36b9cc', 2),
+            ('Sciences de la Vie et de la Terre','SVT',   '#f6c23e', 2),
+            ('Physique-Chimie',                  'PC',    '#e74a3b', 3),
+            ('Anglais',                          'ANG',   '#858796', 2),
+            ('Éducation Physique et Sportive',   'EPS',   '#fd7e14', 1),
+            ('Philosophie',                      'PHILO', '#6f42c1', 3),
+            ('Informatique',                     'INFO',  '#20c997', 2),
+            ('Arts Plastiques',                  'ART',   '#e83e8c', 1),
+        ]
+        subjects = []
+        for name, code, color, coeff in subject_data:
+            subj, created = Subject.objects.get_or_create(
+                school=school,
+                code=f'{code}-{school.code[:3]}',
+                defaults={'name': name, 'coefficient': coeff, 'color': color}
+            )
+            subjects.append(subj)
+            if created:
+                log(f"  Subject created: {subj.name}", 'OK')
+
+        # Subject lookup by code prefix for assignments
+        def subj(code):
+            return next((s for s in subjects if s.code.startswith(code + '-')), None)
+
+        # Classrooms with subject associations
+        # Structure: (level_index, classroom_suffix, subject_codes)
+        classroom_configs = [
+            (0, 'A', ['MATH', 'FR', 'HG', 'SVT', 'PC', 'ANG', 'EPS']),   # 6ème A
+            (0, 'B', ['MATH', 'FR', 'HG', 'SVT', 'ANG', 'EPS', 'ART']),  # 6ème B
+            (1, 'A', ['MATH', 'FR', 'HG', 'SVT', 'PC', 'ANG', 'EPS']),   # 5ème A
+            (2, 'A', ['MATH', 'FR', 'HG', 'PC', 'ANG', 'EPS', 'INFO']),  # 4ème A
+            (3, 'A', ['MATH', 'FR', 'HG', 'PC', 'ANG', 'PHILO', 'INFO']),# 3ème A
+        ]
         classrooms = []
-        for level_obj in level_objects[:3]:  # Create first 3 classrooms for brevity
+        for level_idx, suffix, subject_codes in classroom_configs:
+            if level_idx >= len(level_objects):
+                continue
+            level_obj = level_objects[level_idx]
             cls, created = Classroom.objects.get_or_create(
                 school=school,
-                name=f'{level_obj.name} A',
+                name=f'{level_obj.name} {suffix}',
                 academic_year=year,
                 defaults={'capacity': 35, 'level': level_obj}
             )
             classrooms.append(cls)
             if created:
                 log(f"  Classroom created: {cls.name}", 'OK')
+            # Associate subjects with classroom (idempotent — add() ignores existing links)
+            cls_subjects = [subj(code) for code in subject_codes if subj(code)]
+            cls.subjects.add(*cls_subjects)
 
-        # Subjects
-        subject_names = [
-            ('Mathématiques', 'MATH'),
-            ('Français', 'FR'),
-            ('Histoire-Géographie', 'HG'),
-            ('Sciences de la Vie et de la Terre', 'SVT'),
-            ('Physique-Chimie', 'PC'),
-            ('Anglais', 'ANG'),
-            ('Éducation Physique et Sportive', 'EPS'),
-            ('Philosophie', 'PHILO'),
-        ]
-        subjects = []
-        for name, code in subject_names:
-            subj, created = Subject.objects.get_or_create(
-                school=school,
-                code=f'{code}-{school.code[:3]}',
-                defaults={'name': name, 'coefficient': random.randint(1, 5)}
-            )
-            subjects.append(subj)
-            if created:
-                log(f"  Subject created: {subj.name}", 'OK')
-
+        log(f"  Classroom-subject associations updated", 'OK')
         return year, classrooms, subjects
     except Exception as e:
         log(f"  Could not create academic data: {e}", 'WARN')
@@ -228,23 +249,47 @@ def create_students(school, count=15):
         log(f"  Could not create students: {e}", 'WARN')
 
 
-def create_staff_profiles(school, teachers):
-    """Create staff profiles for teacher users."""
+def create_staff_profiles(school, teachers, subjects):
+    """Create staff profiles for teacher users and assign subjects."""
     try:
         from apps.staff.models import StaffProfile
-        for user in teachers:
-            if not StaffProfile.objects.filter(user=user).exists():
-                StaffProfile.objects.create(
-                    user=user,
-                    school=school,
-                    staff_type='teacher',
-                    contract_type='permanent',
-                    employee_id=f"EMP{school.code[:3]}{user.pk:04d}",
-                    hire_date=date(2020, 9, 1),
-                    specialization='Mathématiques et Sciences',
-                    is_active=True,
-                )
+        from apps.academic.models import Subject
+
+        # Build subject lookup by code prefix
+        school_subjects = {s.code.split('-')[0]: s for s in subjects}
+
+        # Assign different subjects to each teacher for realism
+        teacher_subject_map = [
+            (['MATH', 'PC'],        'Mathématiques et Physique',   'Mathématiques, Physique-Chimie'),
+            (['FR', 'HG', 'PHILO'], 'Lettres et Sciences Humaines','Français, Histoire-Géo, Philosophie'),
+            (['SVT', 'PC'],         'Sciences Naturelles',         'SVT, Physique-Chimie'),
+            (['ANG', 'INFO'],       'Langues et Informatique',     'Anglais, Informatique'),
+            (['EPS', 'ART'],        'Arts et Sport',               'EPS, Arts Plastiques'),
+        ]
+
+        for i, user in enumerate(teachers):
+            subject_codes, spec, _ = teacher_subject_map[i % len(teacher_subject_map)]
+            profile, created = StaffProfile.objects.get_or_create(
+                user=user,
+                defaults={
+                    'school': school,
+                    'staff_type': 'teacher',
+                    'contract_type': 'permanent',
+                    'employee_id': f"EMP{school.code[:3]}{user.pk:04d}",
+                    'hire_date': date(2020, 9, 1),
+                    'specialization': spec,
+                    'is_active': True,
+                }
+            )
+            if created:
                 log(f"  Staff profile created for: {user.get_full_name()}", 'OK')
+
+            # Assign subjects (idempotent)
+            teacher_subjects = [school_subjects[c] for c in subject_codes if c in school_subjects]
+            if teacher_subjects:
+                profile.subjects.add(*teacher_subjects)
+
+        log(f"  Teacher-subject associations updated", 'OK')
     except Exception as e:
         log(f"  Could not create staff profiles: {e}", 'WARN')
 
@@ -350,7 +395,7 @@ def seed(reset=False):
         log(f"\n  → {school.name}:")
         year, classrooms, subjects = create_academic_data(school)
         create_students(school, count=20)
-        create_staff_profiles(school, all_teachers.get(school.pk, []))
+        create_staff_profiles(school, all_teachers.get(school.pk, []), subjects)
 
     # ── Finance ──────────────────────────────────────
     log("\n[5/5] Finance records...")

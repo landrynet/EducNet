@@ -38,13 +38,19 @@
       <div class="card-header bg-transparent"><h6 class="fw-semibold mb-0"><i class="bi bi-diagram-3 me-2 text-success"></i>Classes ({{ classrooms.count }})</h6></div>
       <div class="list-group list-group-flush">
         {% for cls in classrooms %}
-        <div class="list-group-item border-0 d-flex justify-content-between align-items-center">
+        <a href="{% url 'academic:classroom_detail' cls.pk %}"
+           class="list-group-item list-group-item-action border-0 d-flex justify-content-between align-items-center">
           <div>
             <div class="fw-medium">{{ cls.name }}</div>
-            <div class="text-muted small">{{ cls.level }} &bull; {{ cls.academic_year.name }}</div>
+            <div class="text-muted small">
+              {{ cls.level }} &bull; {{ cls.academic_year.name }}
+              {% with cnt=cls.subjects.count %}
+              {% if cnt %}&bull; <span class="text-info">{{ cnt }} matière{{ cnt|pluralize }}</span>{% endif %}
+              {% endwith %}
+            </div>
           </div>
-          <span class="badge bg-light text-dark border">{{ cls.capacity }} places</span>
-        </div>
+          <i class="bi bi-chevron-right text-muted small"></i>
+        </a>
         {% empty %}
         <div class="list-group-item border-0 text-center text-muted py-4">
           <i class="bi bi-collection d-block fs-3 mb-2 opacity-25"></i>

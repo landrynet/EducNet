@@ -55,7 +55,7 @@ def staff_create(request):
     school = request.user.school
     if request.method == 'POST':
         user_form = StaffUserForm(request.POST)
-        profile_form = StaffProfileForm(request.POST)
+        profile_form = StaffProfileForm(request.POST, school=school)
         if user_form.is_valid() and profile_form.is_valid():
             with transaction.atomic():
                 # Create User
@@ -69,12 +69,13 @@ def staff_create(request):
                 profile.user = user
                 profile.school = school
                 profile.save()
+                profile_form.save_m2m()  # save subjects M2M
                 log_action(request.user, 'CREATE', f"Création personnel: {user.get_full_name()}", profile)
             messages.success(request, f"Membre du personnel «{user.get_full_name()}» créé avec succès.")
             return redirect('staff:list')
     else:
         user_form = StaffUserForm()
-        profile_form = StaffProfileForm()
+        profile_form = StaffProfileForm(school=school)
     return render(request, 'staff/form.html', {
         'user_form': user_form,
         'profile_form': profile_form,
@@ -94,7 +95,7 @@ def staff_edit(request, pk):
     )
     if request.method == 'POST':
         user_form = StaffUserForm(request.POST, instance=profile.user)
-        profile_form = StaffProfileForm(request.POST, instance=profile)
+        profile_form = StaffProfileForm(request.POST, instance=profile, school=school)
         if user_form.is_valid() and profile_form.is_valid():
             with transaction.atomic():
                 user = user_form.save(commit=False)
@@ -102,13 +103,13 @@ def staff_edit(request, pk):
                 if pwd:
                     user.set_password(pwd)
                 user.save()
-                profile_form.save()
+                profile_form.save()  # saves instance + M2M subjects
                 log_action(request.user, 'UPDATE', f"Modification personnel: {user.get_full_name()}", profile)
             messages.success(request, "Informations du personnel mises à jour.")
             return redirect('staff:detail', pk=profile.pk)
     else:
         user_form = StaffUserForm(instance=profile.user)
-        profile_form = StaffProfileForm(instance=profile)
+        profile_form = StaffProfileForm(instance=profile, school=school)
     return render(request, 'staff/form.html', {
         'user_form': user_form,
         'profile_form': profile_form,

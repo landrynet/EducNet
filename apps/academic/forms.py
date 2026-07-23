@@ -33,13 +33,17 @@ class LevelForm(forms.ModelForm):
 class ClassroomForm(forms.ModelForm):
     class Meta:
         model = Classroom
-        fields = ['academic_year', 'level', 'name', 'capacity', 'class_teacher']
+        fields = ['academic_year', 'level', 'name', 'capacity', 'class_teacher', 'subjects']
+        widgets = {
+            'subjects': forms.CheckboxSelectMultiple(),
+        }
 
     def __init__(self, *args, school=None, **kwargs):
         super().__init__(*args, **kwargs)
         if school:
             self.fields['academic_year'].queryset = AcademicYear.objects.filter(school=school)
             self.fields['level'].queryset = Level.objects.filter(school=school)
+            self.fields['subjects'].queryset = Subject.objects.filter(school=school)
             from apps.users.models import User
             self.fields['class_teacher'].queryset = User.objects.filter(
                 school=school, role='enseignant', is_active=True
@@ -49,6 +53,7 @@ class ClassroomForm(forms.ModelForm):
             Row(Column('academic_year'), Column('level')),
             Row(Column('name'), Column('capacity')),
             'class_teacher',
+            'subjects',
             Submit('submit', 'Enregistrer', css_class='btn btn-primary'),
         )
 

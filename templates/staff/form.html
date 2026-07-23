@@ -143,6 +143,36 @@
 
   </div>
 
+  <!-- Matières enseignées (full width) -->
+  {% if profile_form.subjects.field.queryset.exists %}
+  <div class="row mt-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-bottom">
+          <h6 class="fw-semibold mb-0"><i class="bi bi-book me-2 text-info"></i>Matières enseignées</h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-2">
+            {% for choice in profile_form.subjects %}
+            <div class="col-sm-4 col-md-3">
+              <div class="form-check">
+                {{ choice.tag }}
+                <label class="form-check-label small" for="{{ choice.id_for_label }}">
+                  {{ choice.choice_label }}
+                </label>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% if profile_form.subjects.errors %}
+          <div class="text-danger small mt-2">{{ profile_form.subjects.errors.0 }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Actions -->
   <div class="d-flex gap-2 mt-4">
     <button type="submit" class="btn btn-primary px-4">

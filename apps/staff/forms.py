@@ -47,11 +47,16 @@ class StaffUserForm(forms.ModelForm):
 
 
 class StaffProfileForm(forms.ModelForm):
-    """Form for the StaffProfile details."""
+    """Form for the StaffProfile details.
+
+    Pass ``school=<School>`` kwarg so the subjects queryset is scoped to the
+    school (multi-tenant isolation).
+    """
 
     class Meta:
         model = StaffProfile
-        fields = ['staff_type', 'contract_type', 'employee_id', 'hire_date', 'specialization', 'bio', 'is_active']
+        fields = ['staff_type', 'contract_type', 'employee_id', 'hire_date',
+                  'specialization', 'subjects', 'bio', 'is_active']
         widgets = {
             'hire_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
             'bio': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
@@ -60,4 +65,13 @@ class StaffProfileForm(forms.ModelForm):
             'specialization': forms.TextInput(attrs={'class': 'form-control'}),
             'employee_id': forms.TextInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'subjects': forms.CheckboxSelectMultiple(),
         }
+
+    def __init__(self, *args, school=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        from apps.academic.models import Subject
+        if school:
+            self.fields['subjects'].queryset = Subject.objects.filter(school=school)
+        else:
+            self.fields['subjects'].queryset = Subject.objects.none()

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'academic:index' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <div>
+    <h4 class="mb-0 fw-bold">{{ cls.name }}</h4>
+    <p class="text-muted small mb-0">{{ cls.level }} — {{ cls.academic_year.name }}</p>
+  </div>
+  <div class="ms-auto d-flex gap-2">
+    <a href="{% url 'academic:classroom_edit' cls.pk %}" class="btn btn-primary btn-sm">
+      <i class="bi bi-pencil me-1"></i>Modifier
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Left: classroom info + subjects -->
+  <div class="col-lg-8">
+
+    <!-- Info card -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-transparent border-bottom">
+        <h6 class="fw-semibold mb-0"><i class="bi bi-info-circle me-2 text-primary"></i>Informations de la classe</h6>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-sm-4">
+            <div class="text-muted small">Niveau</div>
+            <div class="fw-medium">{{ cls.level }}</div>
+          </div>
+          <div class="col-sm-4">
+            <div class="text-muted small">Année scolaire</div>
+            <div class="fw-medium">{{ cls.academic_year.name }}</div>
+          </div>
+          <div class="col-sm-4">
+            <div class="text-muted small">Capacité</div>
+            <div class="fw-medium">{{ cls.capacity }} élèves</div>
+          </div>
+          <div class="col-sm-4">
+            <div class="text-muted small">Élèves inscrits</div>
+            <div class="fw-medium">{{ cls.student_count }}</div>
+          </div>
+          {% if cls.class_teacher %}
+          <div class="col-sm-8">
+            <div class="text-muted small">Professeur principal</div>
+            <div class="fw-medium">{{ cls.class_teacher.get_full_name }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects card -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-book-half me-2 text-info"></i>
+          Matières associées
+          <span class="badge bg-info-subtle text-info ms-1">{{ cls.subjects.count }}</span>
+        </h6>
+        <a href="{% url 'academic:classroom_edit' cls.pk %}" class="btn btn-sm btn-outline-info">
+          <i class="bi bi-pencil me-1"></i>Gérer
+        </a>
+      </div>
+      <div class="card-body">
+        {% if cls.subjects.exists %}
+        <div class="row g-2">
+          {% for subject in cls.subjects.all %}
+          <div class="col-sm-6 col-lg-4">
+            <div class="d-flex align-items-center gap-2 p-2 rounded border bg-light-subtle">
+              <div class="rounded-circle flex-shrink-0"
+                   style="width:10px;height:10px;background:{{ subject.color }};"></div>
+              <div>
+                <div class="fw-medium small">{{ subject.name }}</div>
+                <div class="text-muted" style="font-size:.72rem;">Coeff. {{ subject.coefficient }}</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-4">
+          <i class="bi bi-book d-block fs-3 mb-2 opacity-25"></i>
+          Aucune matière associée à cette classe.
+          <div class="mt-2">
+            <a href="{% url 'academic:classroom_edit' cls.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-plus me-1"></i>Associer des matières
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: teachers for this school with their subjects -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-bottom">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-people me-2 text-success"></i>Enseignants de l'école
+        </h6>
+      </div>
+      <div class="list-group list-group-flush">
+        {% for teacher in teachers %}
+        <div class="list-group-item border-0 py-3">
+          <div class="fw-medium small">{{ teacher.user.get_full_name }}</div>
+          {% if teacher.subjects.exists %}
+          <div class="d-flex flex-wrap gap-1 mt-1">
+            {% for subj in teacher.subjects.all %}
+            <span class="badge rounded-pill px-2"
+                  style="background:{{ subj.color }}20;color:{{ subj.color }};border:1px solid {{ subj.color }}40;font-size:.65rem;">
+              {{ subj.name }}
+            </span>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-muted small mt-1">Aucune matière assignée</div>
+          {% endif %}
+        </div>
+        {% empty %}
+        <div class="list-group-item border-0 text-center text-muted py-4">
+          <i class="bi bi-person-x d-block fs-3 mb-1 opacity-25"></i>
+          Aucun enseignant
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

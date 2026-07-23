@@ -7,7 +7,7 @@ description: Key facts about the school management system — how to run it, wha
 
 ## How to Run
 - Workflow: `PORT=5000 bash run.sh` (runs migrations + collectstatic + creates super admin + starts server)
-- Seed data: `python seed_test_data.py` (idempotent; creates 2 schools, 10 school users, 40 students, payments)
+- Seed data: `python seed_test_data.py` (idempotent; creates 2 schools, 10 users, classrooms, subjects, associations)
 - Default super admin: `admin@edumanager.local` / `Admin@2024!`
 
 ## Architecture Rules
@@ -16,20 +16,22 @@ description: Key facts about the school management system — how to run it, wha
 - No Django Admin for business data — custom dashboard only
 - First-login password change enforced via `FirstLoginMiddleware` + `must_change_password` flag
 
-## What's Complete (V1.1)
+## What's Complete (V1.5 — Étape 1)
 - Auth (login/logout/change-password/first-login flow)
-- Schools CRUD (super admin only)
+- Schools CRUD (super admin) + Settings (admin_ecole) with read-only type display
+- Matricule config UI in school settings (prefix, year, initials, separator, digits + live preview)
 - Users CRUD with role assignment
 - Students full CRUD + detail
 - Parents list/create/edit
-- Staff full CRUD (list/create/edit/detail/toggle) — completed in V1.1
-- Academic (years, levels, classrooms, subjects)
+- Staff full CRUD + subjects assignment per teacher (M2M, school-scoped)
+- Academic: years, levels, classrooms (with subjects M2M), subjects (with edit view)
+- Classroom detail view with subject list + teacher panel
 - Finance (payments list + create)
 - Enrollment (list + create)
 - Audit log
-- Role-based dashboards for all 5 roles (with welcome headers + stats + quick links)
-- Error pages (403, 404, 500) via `apps/dashboard/error_views.py`
-- Sidebar active link bug fixed (was comparing path to URL name, now uses `{% url ... as var %}`)
+- Role-based dashboards for all 5 roles
+- Error pages (403, 404, 500)
+- Sidebar shows school name + school type
 
 ## What's Stub (not yet fully built)
 - Timetable — index only, no create/manage UI
@@ -42,10 +44,14 @@ description: Key facts about the school management system — how to run it, wha
 - Transport — index only
 
 ## Key Quirks
-- Database: SQLite via `--run-syncdb` (no migration files); tables recreated on each fresh DB
-- `seed_test_data.py` must NOT be wrapped in a single `@transaction.atomic` — finance section failure can roll back all schools/users
-- `Student.student_id` is globally unique (not per-school), so seed IDs use `EL{school_pk:02d}{i:04d}` format
-- `Classroom` requires a `Level` ForeignKey (not a plain string field)
-- `Payment.payment_date` has `default=timezone.now` but passing `None` overrides it — omit the key for non-paid statuses
+- Database: SQLite. `academic`, `staff`, `users` etc. are UNMIGRATED (syncdb). `students` and `schools` have proper migrations.
+- `academic_classroom_subjects` M2M table: NOT auto-created by syncdb on existing DBs. run.sh creates it via `CREATE TABLE IF NOT EXISTS` after migrations step.
+- `students_matriculeconfig.include_initials`: added via migration `0003` — pass `first_name`/`last_name` to `generate_next()` when initials are enabled.
+- `seed_test_data.py` must NOT be wrapped in `@transaction.atomic` — finance failure can roll back all schools/users.
+- `Classroom` requires a `Level` ForeignKey (not a plain string field).
+- `Payment.payment_date` has `default=timezone.now` but passing `None` overrides it — omit the key for non-paid statuses.
+- `StaffProfileForm` requires `school=` kwarg for subject queryset isolation.
+- `ClassroomForm` requires `school=` kwarg for subject/year/level/teacher querysets.
+- `classroom_create` must call `form.save_m2m()` after `cls.save()` (commit=False pattern).
 
-**Why:** These were discovered during V1.1 implementation and seed script debugging.
+**Why:** Discovered during V1.1–V1.5 implementation and debugging.

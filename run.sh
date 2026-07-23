@@ -199,6 +199,24 @@ python manage.py migrate --run-syncdb --fake-initial
 
 ok "Migrations terminées."
 
+# ── 4b. Tables M2M non-migrées (created by syncdb only on fresh DB) ──────────
+
+python manage.py shell -c "
+from django.db import connection
+tables_needed = [
+    ('academic_classroom_subjects',
+     '''CREATE TABLE IF NOT EXISTS academic_classroom_subjects (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        classroom_id INTEGER NOT NULL REFERENCES academic_classroom(id) DEFERRABLE INITIALLY DEFERRED,
+        subject_id   INTEGER NOT NULL REFERENCES academic_subject(id)  DEFERRABLE INITIALLY DEFERRED,
+        UNIQUE(classroom_id, subject_id)
+     )'''),
+]
+with connection.cursor() as c:
+    for table_name, ddl in tables_needed:
+        c.execute(ddl)
+"
+
 # ── 5. Fichiers statiques ─────────────────────────────────────
 
 log "Collecte des fichiers statiques..."

@@ -53,6 +53,12 @@ class Classroom(models.Model):
         null=True, blank=True, related_name='managed_classes',
         verbose_name='Professeur principal'
     )
+    # V1.5: subjects associated with this classroom (many-to-many).
+    subjects = models.ManyToManyField(
+        'Subject', blank=True,
+        related_name='classrooms',
+        verbose_name='Matières',
+    )
 
     class Meta:
         verbose_name = 'Classe'
