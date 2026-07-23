@@ -256,8 +256,36 @@ if missing:
     with connection.schema_editor() as schema_editor:
         for model in missing:
             schema_editor.create_model(model)
+
+    existing.update(model._meta.db_table for model in missing)
+
+with connection.cursor() as cursor:
+    columns = {
+        model._meta.db_table: {
+            column.name for column in connection.introspection.get_table_description(
+                cursor, model._meta.db_table
+            )
+        }
+        for model in models
+        if model._meta.db_table in existing
+    }
+
+missing_fields = [
+    (model, field)
+    for model in models
+    for field in model._meta.local_fields
+    if field.column not in columns.get(model._meta.db_table, set())
+]
+
+if missing_fields:
+    print('Ajout des colonnes timetable manquantes : ' +
+          ', '.join(f'{model._meta.db_table}.{field.column}'
+                    for model, field in missing_fields))
+    with connection.schema_editor() as schema_editor:
+        for model, field in missing_fields:
+            schema_editor.add_field(model, field)
 else:
-    print('Tables timetable déjà présentes, aucune création nécessaire.')
+    print('Schéma timetable déjà complet, aucune modification nécessaire.')
 "
 
     warn "Schéma timetable réparé sans suppression de données. Marquage de timetable.0001 comme appliquée..."
