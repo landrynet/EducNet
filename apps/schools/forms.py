@@ -1,3 +1,5 @@
+"""School forms — V1.4: school code is now auto-generated, removed from all forms."""
+
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Fieldset
@@ -5,10 +7,12 @@ from .models import School
 
 
 class SchoolForm(forms.ModelForm):
+    """Edit an existing school. The code is technical and never editable."""
+
     class Meta:
         model = School
         fields = [
-            'name', 'code', 'school_type', 'address', 'city', 'country',
+            'name', 'school_type', 'address', 'city', 'country',
             'phone', 'email', 'website', 'logo', 'director_name',
             'registration_number', 'founded_year', 'is_active',
         ]
@@ -18,19 +22,13 @@ class SchoolForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Champs obligatoires explicites
         for field in ('name', 'address', 'city', 'country'):
             self.fields[field].required = True
-        # Le code ne peut pas être modifié après création
-        if self.instance and self.instance.pk:
-            self.fields['code'].disabled = True
-            self.fields['code'].help_text = "Le code ne peut pas être modifié après la création."
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset('Informations générales',
-                Row(Column('name', css_class='col-md-8'), Column('code', css_class='col-md-4')),
-                Row(Column('school_type'), Column('founded_year')),
-                'director_name',
+                Row(Column('name', css_class='col-md-8'), Column('school_type', css_class='col-md-4')),
+                Row(Column('founded_year'), Column('director_name')),
                 'registration_number',
             ),
             Fieldset('Coordonnées',
@@ -48,12 +46,16 @@ class SchoolForm(forms.ModelForm):
 
 
 class SchoolCreationForm(forms.ModelForm):
-    """Initial school information entered by the Super Admin."""
+    """Initial school creation by Super Admin.
+
+    V1.4: The school code is auto-generated server-side — the Super Admin
+    does not enter it manually.
+    """
 
     class Meta:
         model = School
         fields = [
-            'name', 'code', 'school_type', 'address', 'city', 'country',
+            'name', 'school_type', 'address', 'city', 'country',
             'phone', 'email', 'website', 'logo', 'registration_number',
             'founded_year',
         ]
@@ -64,8 +66,8 @@ class SchoolCreationForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset('Informations initiales',
-                Row(Column('name', css_class='col-md-8'), Column('code', css_class='col-md-4')),
-                Row(Column('school_type'), Column('founded_year')),
+                Row(Column('name', css_class='col-md-8'), Column('school_type', css_class='col-md-4')),
+                Row(Column('founded_year'), Column('director_name') if 'director_name' in self.fields else Column()),
                 'registration_number',
             ),
             Fieldset('Coordonnées',
@@ -75,5 +77,5 @@ class SchoolCreationForm(forms.ModelForm):
                 'website',
             ),
             Fieldset('Logo', 'logo'),
-            Submit('submit', 'Créer l’école', css_class='btn btn-primary mt-3'),
+            Submit('submit', 'Créer l\'école', css_class='btn btn-primary mt-3'),
         )

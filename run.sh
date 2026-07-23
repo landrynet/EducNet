@@ -195,7 +195,7 @@ ok "Configuration Django valide."
 
 log "Application des migrations..."
 
-python manage.py migrate --run-syncdb
+python manage.py migrate --run-syncdb --fake-initial
 
 ok "Migrations terminées."
 

@@ -1,0 +1,207 @@
+Oui, voici une version **propre, précise et concise** du prompt V1.4 :
+
+---
+
+# PROMPT – V1.4
+
+## Correction de l'unicité des données et gestion des matricules par école
+
+La V1.4 doit corriger la gestion des données dans l'architecture Multi-Site sans casser les fonctionnalités existantes.
+
+Avant toute modification, analyse le code actuel, les modèles, les contraintes de base de données, les formulaires et les validations.
+
+---
+
+## 1. Corriger les contraintes d'unicité
+
+Actuellement, certaines données sont refusées lorsqu'elles existent déjà dans une autre école.
+
+Il faut vérifier chaque champ et déterminer s'il doit être :
+
+* Unique dans toute la plateforme.
+* Unique uniquement dans une école.
+* Non unique.
+
+### Règle importante
+
+Une donnée appartenant au contexte d'une école ne doit pas être globalement unique sans raison métier.
+
+Exemple :
+
+```text
+École A → Matricule 2026-0001
+École B → Matricule 2026-0001
+```
+
+Cela doit être autorisé.
+
+Mais :
+
+```text
+École A → Matricule 2026-0001
+École A → Matricule 2026-0001
+```
+
+doit être refusé.
+
+La contrainte doit donc être :
+
+```text
+UNIQUE(école + matricule)
+```
+
+et non simplement :
+
+```text
+UNIQUE(matricule)
+```
+
+---
+
+## 2. Différencier les emails
+
+Vérifier la différence entre :
+
+### Email de contact
+
+L'email de contact d'une école ne doit pas être globalement unique si cela n'est pas nécessaire.
+
+### Email de connexion
+
+L'email utilisé comme identifiant de connexion doit respecter les règles d'unicité nécessaires à l'authentification.
+
+Ne pas confondre l'email de contact avec l'identifiant de connexion d'un utilisateur.
+
+---
+
+## 3. Matricule configurable par école
+
+Chaque école doit pouvoir configurer le format de ses matricules.
+
+Exemples :
+
+```text
+2026-0001
+```
+
+```text
+ELV-2026-0001
+```
+
+```text
+2026/001
+```
+
+La configuration doit pouvoir inclure :
+
+* Préfixe.
+* Année.
+* Numéro séquentiel.
+* Nombre de chiffres.
+* Format personnalisé si nécessaire.
+
+Le matricule doit être généré automatiquement lors de la création d'un élève.
+
+Chaque école doit avoir sa propre séquence.
+
+Les anciens matricules ne doivent pas être modifiés automatiquement si la configuration change.
+
+---
+
+## 4. Champ « Code » dans « Créer une école »
+
+Le formulaire actuel contient un champ :
+
+```text
+Code*
+```
+
+Analyser d'abord son rôle réel dans le système.
+
+### Si ce code est un identifiant technique :
+
+* Supprimer le champ de saisie manuelle du formulaire.
+* Générer automatiquement un code unique côté serveur.
+* Garantir qu'il reste stable et unique.
+
+Exemple :
+
+```text
+SCH-000001
+SCH-000002
+```
+
+Le Super Admin ne doit pas avoir à saisir manuellement ce code.
+
+### Si ce code est utilisé pour une URL ou une fonctionnalité importante :
+
+Conserver la fonctionnalité, mais automatiser sa génération si possible.
+
+### Important
+
+Ne pas confondre :
+
+```text
+Code de l'école
+≠
+Matricule de l'élève
+≠
+Identifiant de connexion
+```
+
+---
+
+## 5. Isolation Multi-Site
+
+Vérifier que les données d'une école restent correctement isolées.
+
+Un utilisateur d'une école ne doit pas voir les données d'une autre école sans permission explicite.
+
+Tester notamment :
+
+* Élèves.
+* Matricules.
+* Parents.
+* Paiements.
+* Classes.
+* Évaluations.
+* Recherches.
+* Filtres.
+
+---
+
+## 6. Tests obligatoires
+
+Tester :
+
+1. Deux écoles peuvent utiliser le même matricule.
+2. Deux élèves de la même école ne peuvent pas avoir le même matricule.
+3. Chaque école peut utiliser son propre format de matricule.
+4. Les matricules sont générés automatiquement.
+5. Le code de l'école est automatiquement généré s'il est technique.
+6. Les données d'une école ne sont pas visibles par une autre école.
+7. Les données existantes ne sont pas perdues.
+8. Aucune fonctionnalité existante de la V1 n'est cassée.
+
+---
+
+## RÈGLE FINALE
+
+La V1.4 doit corriger l'unicité des données selon le contexte Multi-Site :
+
+```text
+Code technique de l'école
+→ Unique globalement
+→ Généré automatiquement
+```
+
+```text
+Matricule de l'élève
+→ Unique dans son école
+→ Configurable par l'école
+→ Généré automatiquement
+```
+
+Ne pas appliquer de contrainte globale à une donnée qui doit être propre au contexte d'une école.
+
+Analyser, modifier, migrer si nécessaire et tester complètement avant de considérer la V1.4 comme terminée.

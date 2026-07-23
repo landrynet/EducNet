@@ -16,7 +16,7 @@ class SchoolOnboardingTests(TestCase):
         self.client.force_login(self.super_admin)
         self.school_data = {
             'name': 'École de test',
-            'code': 'TEST-ONBOARD',
+            # V1.4: code is auto-generated — no longer submitted via the form.
             'school_type': 'secondaire',
             'address': '1 rue du Test',
             'city': 'Abidjan',
@@ -30,7 +30,8 @@ class SchoolOnboardingTests(TestCase):
 
     def test_school_creation_creates_one_temporary_admin_and_shows_credentials_once(self):
         response = self.client.post(reverse('schools:create'), self.school_data)
-        school = School.objects.get(code='TEST-ONBOARD')
+        # V1.4: code is auto-generated — look up the school by its name instead.
+        school = School.objects.get(name='École de test')
         admin = User.objects.get(school=school, role=Role.ADMIN_ECOLE)
 
         self.assertEqual(response.status_code, 302)
