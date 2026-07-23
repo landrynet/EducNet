@@ -52,38 +52,25 @@
        class="btn btn-outline-secondary btn-sm">
       <i class="bi bi-file-earmark-pdf me-1"></i>PDF
     </a>
-    {% if can_manage and schedule %}
-    <div class="dropdown">
-      <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-        <i class="bi bi-arrow-up-circle me-1"></i>Statut
+    {% if can_manage %}
+    {% if not schedule or schedule.status != 'published' %}
+    <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
+      {% csrf_token %}<input type="hidden" name="action" value="publish">
+      <button type="submit" class="btn btn-success btn-sm"
+              onclick="return confirm('Publier cet emploi du temps ? Il sera visible par les enseignants et le directeur.')">
+        <i class="bi bi-check-circle me-1"></i>Publier
       </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li>
-          <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
-            {% csrf_token %}<input type="hidden" name="action" value="draft">
-            <button class="dropdown-item {% if schedule.status == 'draft' %}active{% endif %}">
-              <i class="bi bi-circle me-2"></i>Brouillon
-            </button>
-          </form>
-        </li>
-        <li>
-          <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
-            {% csrf_token %}<input type="hidden" name="action" value="preparing">
-            <button class="dropdown-item {% if schedule.status == 'preparing' %}active{% endif %}">
-              <i class="bi bi-pencil-square me-2"></i>En préparation
-            </button>
-          </form>
-        </li>
-        <li>
-          <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
-            {% csrf_token %}<input type="hidden" name="action" value="publish">
-            <button class="dropdown-item {% if schedule.status == 'published' %}active{% endif %}">
-              <i class="bi bi-check-circle me-2"></i>Publié
-            </button>
-          </form>
-        </li>
-      </ul>
-    </div>
+    </form>
+    {% endif %}
+    {% if schedule and schedule.status == 'published' %}
+    <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
+      {% csrf_token %}<input type="hidden" name="action" value="draft">
+      <button type="submit" class="btn btn-outline-secondary btn-sm"
+              onclick="return confirm('Repasser en brouillon ? L\'emploi du temps ne sera plus visible.')">
+        <i class="bi bi-arrow-counterclockwise me-1"></i>Brouillon
+      </button>
+    </form>
+    {% endif %}
     {% endif %}
   </div>
 </div>
@@ -335,25 +322,25 @@ function loadTeachers(subjectId, selectEl, currentTeacherId) {
     return r.json();
   })
   .then(data => {
-    selectEl.innerHTML = '<option value="">— Choisir un enseignant —</option>';
-    data.teachers.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.pk;
-      opt.textContent = t.name;
-      selectEl.appendChild(opt);
-    });
     if (!data.teachers.length) {
-      const opt = document.createElement('option');
-      opt.value = '';
-      opt.textContent = '— Aucun enseignant affecté à cette matière —';
-      opt.disabled = true;
-      selectEl.appendChild(opt);
+      selectEl.innerHTML = '<option value="">— Aucun enseignant affecté à cette matière —</option>';
+    } else {
+      selectEl.innerHTML = '<option value="">— Choisir un enseignant —</option>';
+      data.teachers.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.pk;
+        opt.textContent = t.name;
+        selectEl.appendChild(opt);
+      });
     }
     // Auto-select: use currentTeacherId if provided, else auto-fill if unique
     if (currentTeacherId) {
       selectEl.value = String(currentTeacherId);
     } else if (data.teachers.length === 1) {
       selectEl.value = String(data.teachers[0].pk);
+      // Visual hint that teacher was auto-filled
+      selectEl.style.borderColor = '#198754';
+      setTimeout(() => { selectEl.style.borderColor = ''; }, 2000);
     }
   })
   .catch(() => {

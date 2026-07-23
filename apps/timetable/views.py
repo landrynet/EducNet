@@ -54,9 +54,12 @@ def _check_conflicts(school, classroom, day, timeslot, teacher_id=None, room='',
     if teacher_id:
         qs = base_qs.filter(teacher_id=teacher_id).exclude(classroom=classroom)
         if qs.exists():
-            other = qs.select_related('classroom').first()
+            other = qs.select_related('classroom', 'teacher', 'subject', 'timeslot').first()
+            teacher_name = other.teacher.get_full_name() if other.teacher else "Cet enseignant"
             conflicts.append(
-                f"L'enseignant est déjà affecté à la classe {other.classroom} sur ce créneau."
+                f"⚠️ Conflit horaire : {teacher_name} a déjà un cours de «\u202f{other.subject.name}\u202f» "
+                f"avec la classe {other.classroom} sur ce créneau ({other.timeslot.time_range}). "
+                f"Choisissez un autre enseignant ou un autre horaire."
             )
 
     # Room conflict
