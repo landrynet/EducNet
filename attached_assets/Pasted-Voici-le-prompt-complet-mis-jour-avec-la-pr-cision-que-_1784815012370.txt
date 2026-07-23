@@ -1,0 +1,286 @@
+Voici le **prompt complet mis à jour**, avec la précision que **l'Étape 2 sera fournie séparément par toi** :
+
+---
+
+# PROMPT V2.0 — ÉTAPE 1
+
+## Correction des matières, classes et enseignants
+
+Avant de développer le module **Emploi du temps**, corriger et vérifier la gestion des relations entre les **matières, les classes et les enseignants** dans le système existant.
+
+⚠️ **Ne pas développer le module Emploi du temps dans cette étape.**
+
+⚠️ **Ne pas casser les fonctionnalités existantes de la V1.4.**
+
+Avant toute modification, analyser le code existant, les modèles, les vues, les formulaires, les templates, les relations et les données actuelles.
+
+---
+
+## 1. Vérifier l'existant
+
+Vérifier :
+
+* Les matières existantes.
+* Les classes existantes.
+* Les enseignants existants.
+* Les relations entre les matières et les classes.
+* Les relations entre les matières et les enseignants.
+* L'affichage actuel des matières.
+* Les formulaires existants.
+* Les filtres et recherches existants.
+
+Ne pas créer de doublons si les fonctionnalités ou modèles existent déjà.
+
+---
+
+## 2. Relation École → Classe → Matière
+
+Les matières doivent être correctement liées à l'école et aux classes.
+
+Structure attendue :
+
+```text
+École
+   ↓
+Classe
+   ↓
+Matières associées
+```
+
+Exemple :
+
+```text
+École ABC
+   ↓
+6e A
+   ↓
+Mathématiques
+Français
+Anglais
+Histoire
+Sciences
+```
+
+Pour chaque classe, le système doit permettre de déterminer clairement les matières qui lui sont associées.
+
+---
+
+## 3. Relation Enseignant → Matière
+
+Chaque enseignant doit pouvoir être associé à une ou plusieurs matières.
+
+Exemple :
+
+```text
+Enseignant : M. Kabila
+        ↓
+Mathématiques
+Physique
+```
+
+Le système doit permettre de consulter clairement les matières enseignées par chaque enseignant.
+
+---
+
+## 4. Relation Classe → Matière
+
+Pour chaque classe, il doit être possible de voir les matières qui lui sont associées.
+
+Exemple :
+
+```text
+Classe : 6e A
+
+Matières :
+- Mathématiques
+- Français
+- Anglais
+- Histoire
+- Géographie
+- Sciences
+```
+
+Cette relation doit être correctement enregistrée et affichée.
+
+---
+
+## 5. Affichage pour les classes
+
+Dans l'interface de gestion d'une classe, afficher clairement les matières associées à cette classe.
+
+L'utilisateur autorisé doit pouvoir :
+
+* Voir les matières de la classe.
+* Ajouter une matière si le système le permet.
+* Retirer une matière si nécessaire.
+* Modifier les associations selon les permissions existantes.
+
+Respecter les rôles et permissions déjà présents dans le système.
+
+---
+
+## 6. Affichage pour les enseignants
+
+Dans l'interface d'un enseignant, afficher clairement les matières qui lui sont associées.
+
+Exemple :
+
+```text
+Enseignant : M. Kabila
+
+Matières enseignées :
+- Mathématiques
+- Physique
+```
+
+Un enseignant ne doit pas être automatiquement associé à des matières qui ne lui appartiennent pas.
+
+---
+
+## 7. Préparer la compatibilité future avec l'Emploi du temps
+
+Même si l'Emploi du temps ne doit pas encore être développé, les relations doivent être correctement préparées pour son intégration future.
+
+La structure doit permettre plus tard :
+
+```text
+École
+   ↓
+Classe
+   ↓
+Matière
+   ↓
+Enseignant
+   ↓
+Emploi du temps
+```
+
+Exemple :
+
+```text
+Classe : 6e A
+Matière : Mathématiques
+Enseignant : M. Kabila
+```
+
+Cette combinaison devra pouvoir être utilisée dans le futur module Emploi du temps.
+
+---
+
+## 8. Mise à jour du script de données de test
+
+Mettre à jour le **script de données de test existant**.
+
+⚠️ Ne pas créer un deuxième système de données de test si un script existe déjà.
+
+Ajouter des données de test réalistes :
+
+* Plusieurs classes.
+* Plusieurs matières.
+* Plusieurs enseignants.
+* Plusieurs associations entre classes et matières.
+* Plusieurs associations entre enseignants et matières.
+
+Le script doit :
+
+* Être réexécutable.
+* Éviter les doublons.
+* Préserver les données existantes.
+* Créer correctement les relations.
+* Être facilement extensible pour ajouter d'autres données de test.
+
+---
+
+## 9. Isolation Multi-Site
+
+Respecter strictement l'architecture Multi-Site.
+
+Une école ne doit jamais voir les données d'une autre école.
+
+Les relations doivent respecter :
+
+```text
+École A
+    ↓
+Classes de l'école A
+    ↓
+Matières de l'école A
+    ↓
+Enseignants de l'école A
+```
+
+et séparément :
+
+```text
+École B
+    ↓
+Classes de l'école B
+    ↓
+Matières de l'école B
+    ↓
+Enseignants de l'école B
+```
+
+Vérifier toutes les vues, requêtes, filtres et affichages concernés.
+
+---
+
+## 10. Vérification des permissions
+
+Respecter les rôles et permissions existants.
+
+Ne pas donner automatiquement à un rôle l'accès à une fonctionnalité qui ne lui appartient pas.
+
+Les modules et fonctionnalités doivent rester cohérents avec le système de permissions actuel.
+
+---
+
+## 11. Tests obligatoires
+
+Tester :
+
+* Affichage des matières d'une classe.
+* Association d'une matière à une classe.
+* Retrait d'une matière d'une classe.
+* Affichage des matières d'un enseignant.
+* Association d'une matière à un enseignant.
+* Plusieurs matières pour une même classe.
+* Plusieurs matières pour un même enseignant.
+* Isolation entre plusieurs écoles.
+* Script de données de test.
+* Absence de doublons après plusieurs exécutions.
+* Absence de régression dans les fonctionnalités existantes.
+
+---
+
+# OBJECTIF FINAL
+
+À la fin de cette étape, le système doit avoir une structure propre et cohérente :
+
+```text
+École
+   ↓
+Classes
+   ↓
+Matières associées
+   ↓
+Enseignants associés
+```
+
+Les matières doivent être correctement visibles et liées aux classes et aux enseignants.
+
+Les données doivent être correctement préparées pour la prochaine étape.
+
+---
+
+# ⚠️ IMPORTANT — ÉTAPE 2
+
+Cette tâche concerne **uniquement l'ÉTAPE 1**.
+
+**Ne pas commencer le développement du module Emploi du temps.**
+
+L'**ÉTAPE 2** fera l'objet d'un **prompt séparé que je fournirai ultérieurement**.
+
+Attendre la validation complète de cette Étape 1 avant de commencer tout développement lié à l'Emploi du temps.
+
+**Ne pas anticiper, ne pas développer l'Étape 2 et ne pas modifier l'architecture pour ajouter des fonctionnalités non demandées dans cette étape.**

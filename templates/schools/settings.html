@@ -9,9 +9,11 @@
 </div>
 
 <div class="row g-4">
-  <!-- School info form -->
+  <!-- ── Left column ──────────────────────────────────────── -->
   <div class="col-lg-8">
-    <div class="card border-0 shadow-sm">
+
+    <!-- School info form -->
+    <div class="card border-0 shadow-sm mb-4">
       <div class="card-header bg-transparent border-0 pb-0">
         <h6 class="fw-semibold mb-0">
           <i class="bi bi-building me-2 text-primary"></i>Informations de l'école
@@ -19,20 +21,125 @@
       </div>
       <div class="card-body">
         {% include 'partials/messages.html' %}
+
+        {# Read-only school type badge #}
+        <div class="mb-3">
+          <label class="form-label fw-medium text-muted small">Type d'établissement</label>
+          <div>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 fs-6">
+              <i class="bi bi-building-check me-1"></i>{{ school.get_school_type_display }}
+            </span>
+            <p class="text-muted small mt-1 mb-0">
+              Le type d'établissement est défini à la création et ne peut pas être modifié ici.
+            </p>
+          </div>
+        </div>
+        <hr class="my-3">
+
         <form method="post" enctype="multipart/form-data" novalidate>
           {% csrf_token %}
+          <input type="hidden" name="action" value="school">
           {{ form|crispy }}
+        </form>
+      </div>
+    </div>
+
+    <!-- Matricule config form -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent border-0 pb-0">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-hash me-2 text-primary"></i>Configuration des matricules élèves
+        </h6>
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">
+          Choisissez comment les matricules sont générés automatiquement lors de l'inscription d'un nouvel élève.
+          Les matricules déjà attribués ne seront pas modifiés.
+        </p>
+
+        <form method="post" novalidate id="matricule-form">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="matricule">
+
+          <div class="row g-3">
+            <!-- Prefix -->
+            <div class="col-md-4">
+              <label class="form-label fw-medium">Préfixe</label>
+              <input type="text" name="prefix" id="id_prefix"
+                     class="form-control" maxlength="10"
+                     value="{{ mat_config.prefix }}"
+                     placeholder="Ex. ELV, 22, LMC">
+              <div class="form-text">Laissez vide pour aucun préfixe.</div>
+            </div>
+
+            <!-- Separator -->
+            <div class="col-md-4">
+              <label class="form-label fw-medium">Séparateur</label>
+              <select name="separator" id="id_separator" class="form-select">
+                <option value="-" {% if mat_config.separator == '-' %}selected{% endif %}>Tiret  —  ELV-2026-0001</option>
+                <option value="/" {% if mat_config.separator == '/' %}selected{% endif %}>Barre oblique  —  ELV/2026/0001</option>
+                <option value="." {% if mat_config.separator == '.' %}selected{% endif %}>Point  —  ELV.2026.0001</option>
+                <option value="" {% if mat_config.separator == '' %}selected{% endif %}>Aucun  —  ELV20260001</option>
+              </select>
+            </div>
+
+            <!-- Num digits -->
+            <div class="col-md-4">
+              <label class="form-label fw-medium">Chiffres du numéro</label>
+              <input type="number" name="num_digits" id="id_num_digits"
+                     class="form-control" min="2" max="8"
+                     value="{{ mat_config.num_digits }}">
+              <div class="form-text">Ex. 4 → 0001 ; 6 → 000001</div>
+            </div>
+
+            <!-- Toggles -->
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch"
+                       name="include_year" id="id_include_year"
+                       {% if mat_config.include_year %}checked{% endif %}>
+                <label class="form-check-label" for="id_include_year">
+                  Inclure l'année en cours
+                  <small class="text-muted d-block">Ex. 2026</small>
+                </label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch"
+                       name="include_initials" id="id_include_initials"
+                       {% if mat_config.include_initials %}checked{% endif %}>
+                <label class="form-check-label" for="id_include_initials">
+                  Inclure les initiales de l'élève
+                  <small class="text-muted d-block">1ère lettre prénom + 1ère lettre nom — ex. KJ</small>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live preview -->
+          <div class="alert alert-light border mt-4 d-flex align-items-center gap-3">
+            <i class="bi bi-eye text-primary fs-5"></i>
+            <div>
+              <div class="small text-muted mb-1">Aperçu du prochain matricule</div>
+              <span id="matricule-preview" class="fw-bold fs-5 font-monospace text-primary">
+                {{ mat_config.preview }}
+              </span>
+            </div>
+          </div>
+
           <div class="mt-3">
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-save me-2"></i>Enregistrer les modifications
+              <i class="bi bi-save me-2"></i>Enregistrer la configuration
             </button>
           </div>
         </form>
       </div>
     </div>
-  </div>
 
-  <!-- Side info -->
+  </div><!-- /col-lg-8 -->
+
+  <!-- ── Right column ─────────────────────────────────────── -->
   <div class="col-lg-4">
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
@@ -47,6 +154,11 @@
         </div>
         {% endif %}
         <h6 class="fw-bold text-center">{{ school.name }}</h6>
+        <div class="text-center mb-2">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">
+            {{ school.get_school_type_display }}
+          </span>
+        </div>
         <div class="text-center mb-3">
           <span class="badge bg-light text-dark border small">{{ school.code }}</span>
           <span class="badge bg-{% if school.is_active %}success{% else %}secondary{% endif %} ms-1 small">
@@ -71,11 +183,42 @@
           <i class="bi bi-info-circle me-2 text-primary"></i>Informations
         </h6>
         <p class="small text-muted mb-0">
-          Les modifications apportées ici sont immédiatement enregistrées et visibles dans
-          tout le système. Le code de l'établissement ne peut pas être modifié après création.
+          Les modifications sont immédiatement enregistrées. Le code et le type de l'établissement
+          sont attribués à la création et ne peuvent pas être modifiés ici.
         </p>
       </div>
     </div>
   </div>
+
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const previewUrl = "{% url 'schools:matricule_preview' %}";
+  const previewEl  = document.getElementById('matricule-preview');
+
+  function refreshPreview() {
+    const params = new URLSearchParams({
+      prefix:            document.getElementById('id_prefix').value,
+      include_year:      document.getElementById('id_include_year').checked ? 'true' : 'false',
+      include_initials:  document.getElementById('id_include_initials').checked ? 'true' : 'false',
+      separator:         document.getElementById('id_separator').value,
+      num_digits:        document.getElementById('id_num_digits').value,
+    });
+    fetch(previewUrl + '?' + params)
+      .then(r => r.json())
+      .then(d => { previewEl.textContent = d.preview; })
+      .catch(() => {});
+  }
+
+  ['id_prefix','id_separator','id_num_digits'].forEach(id => {
+    document.getElementById(id).addEventListener('input', refreshPreview);
+  });
+  ['id_include_year','id_include_initials'].forEach(id => {
+    document.getElementById(id).addEventListener('change', refreshPreview);
+  });
+})();
+</script>
 {% endblock %}

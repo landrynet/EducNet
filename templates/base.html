@@ -30,6 +30,7 @@
       <span class="fw-700">EduManager</span>
       {% if current_school %}
       <small class="d-block text-truncate opacity-75" style="max-width:140px;">{{ current_school.name }}</small>
+      <small class="d-block opacity-50" style="font-size:.65rem;letter-spacing:.02em;">{{ current_school.get_school_type_display }}</small>
       {% endif %}
     </div>
   </div>

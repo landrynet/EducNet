@@ -7,7 +7,7 @@ from .models import School
 
 
 class SchoolForm(forms.ModelForm):
-    """Edit an existing school. The code is technical and never editable."""
+    """Edit an existing school (super admin). The code is technical and never editable."""
 
     class Meta:
         model = School
@@ -42,6 +42,41 @@ class SchoolForm(forms.ModelForm):
                 'is_active',
             ),
             Submit('submit', 'Enregistrer', css_class='btn btn-primary mt-3'),
+        )
+
+
+class SchoolSettingsForm(SchoolForm):
+    """Settings form for school admins — school_type is shown read-only, not editable."""
+
+    class Meta(SchoolForm.Meta):
+        # Exclude school_type from editable fields; it is displayed separately in the template.
+        fields = [
+            'name', 'address', 'city', 'country',
+            'phone', 'email', 'website', 'logo', 'director_name',
+            'registration_number', 'founded_year',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super(SchoolForm, self).__init__(*args, **kwargs)  # skip SchoolForm.__init__ helper setup
+        for field in ('name', 'address', 'city', 'country'):
+            self.fields[field].required = True
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset('Informations générales',
+                'name',
+                Row(Column('founded_year'), Column('director_name')),
+                'registration_number',
+            ),
+            Fieldset('Coordonnées',
+                'address',
+                Row(Column('city'), Column('country')),
+                Row(Column('phone'), Column('email')),
+                'website',
+            ),
+            Fieldset('Médias',
+                'logo',
+            ),
+            Submit('submit', 'Enregistrer les modifications', css_class='btn btn-primary mt-3'),
         )
 
 

@@ -30,12 +30,17 @@ class MatriculeConfig(models.Model):
     )
     prefix = models.CharField(
         max_length=10, blank=True, default='',
-        verbose_name='Préfixe (ex. ELV)',
+        verbose_name='Préfixe (ex. ELV, 22)',
         help_text='Laissez vide pour ne pas utiliser de préfixe.',
     )
     include_year = models.BooleanField(
         default=True,
-        verbose_name='Inclure l\'année',
+        verbose_name='Inclure l\'année en cours',
+    )
+    include_initials = models.BooleanField(
+        default=False,
+        verbose_name='Inclure les initiales de l\'élève',
+        help_text='Ajoute la 1ère lettre du prénom et du nom (ex. KJ pour Konan Jean).',
     )
     separator = models.CharField(
         max_length=3, default='-',
@@ -43,8 +48,8 @@ class MatriculeConfig(models.Model):
     )
     num_digits = models.PositiveSmallIntegerField(
         default=4,
-        verbose_name='Nombre de chiffres',
-        help_text='Nombre de zéros pour rembourrer le numéro séquentiel.',
+        verbose_name='Nombre de chiffres du numéro séquentiel',
+        help_text='Ex. 4 → 0001, 0002 …',
     )
     last_sequence = models.PositiveIntegerField(
         default=0,
@@ -58,18 +63,26 @@ class MatriculeConfig(models.Model):
     def __str__(self):
         return f"Config matricule — {self.school}"
 
-    def preview(self):
-        """Return a preview of the next matricule without incrementing the counter."""
-        next_seq = self.last_sequence + 1
+    def _build_parts(self, sequence, first_name='', last_name=''):
+        """Assemble matricule components in order: prefix, initials, year, sequence."""
         parts = []
         if self.prefix:
             parts.append(self.prefix)
+        if self.include_initials:
+            fn = (first_name or '').strip()
+            ln = (last_name or '').strip()
+            initials = f"{fn[:1]}{ln[:1]}".upper() if fn or ln else 'XX'
+            parts.append(initials)
         if self.include_year:
             parts.append(str(timezone.now().year))
-        parts.append(str(next_seq).zfill(self.num_digits))
+        parts.append(str(sequence).zfill(self.num_digits))
         return self.separator.join(parts)
 
-    def generate_next(self):
+    def preview(self, first_name='', last_name=''):
+        """Return a preview of the next matricule without incrementing the counter."""
+        return self._build_parts(self.last_sequence + 1, first_name, last_name)
+
+    def generate_next(self, first_name='', last_name=''):
         """Atomically increment the sequence and return the new matricule string."""
         with transaction.atomic():
             # Re-fetch with a row-level lock to prevent duplicates under concurrency.
@@ -77,14 +90,7 @@ class MatriculeConfig(models.Model):
             config.last_sequence += 1
             config.save(update_fields=['last_sequence'])
             self.last_sequence = config.last_sequence
-
-        parts = []
-        if self.prefix:
-            parts.append(self.prefix)
-        if self.include_year:
-            parts.append(str(timezone.now().year))
-        parts.append(str(self.last_sequence).zfill(self.num_digits))
-        return self.separator.join(parts)
+        return self._build_parts(self.last_sequence, first_name, last_name)
 
 
 class Student(models.Model):
@@ -148,5 +154,8 @@ class Student(models.Model):
     def save(self, *args, **kwargs):
         if not self.student_id and self.school_id:
             config, _ = MatriculeConfig.objects.get_or_create(school_id=self.school_id)
-            self.student_id = config.generate_next()
+            self.student_id = config.generate_next(
+                first_name=self.first_name,
+                last_name=self.last_name,
+            )
         super().save(*args, **kwargs)

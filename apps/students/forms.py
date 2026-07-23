@@ -3,7 +3,29 @@
 from django import forms
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Row, Column, Submit, Fieldset
-from .models import Student
+from .models import Student, MatriculeConfig
+
+
+class MatriculeConfigForm(forms.ModelForm):
+    """Configure per-school matricule generation rules."""
+
+    class Meta:
+        model = MatriculeConfig
+        fields = ['prefix', 'include_year', 'include_initials', 'separator', 'num_digits']
+        widgets = {
+            'separator': forms.Select(choices=[
+                ('-', 'Tiret  —  ELV-2026-0001'),
+                ('/', 'Barre oblique  —  ELV/2026/0001'),
+                ('.', 'Point  —  ELV.2026.0001'),
+                ('', 'Aucun  —  ELV20260001'),
+            ]),
+            'num_digits': forms.NumberInput(attrs={'min': 2, 'max': 8}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False  # the template wraps it in its own <form>
 
 
 class StudentForm(forms.ModelForm):

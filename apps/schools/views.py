@@ -7,8 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
+from django.http import JsonResponse
 from .models import School
-from .forms import SchoolForm, SchoolCreationForm
+from .forms import SchoolForm, SchoolSettingsForm, SchoolCreationForm
+from apps.students.models import MatriculeConfig
+from apps.students.forms import MatriculeConfigForm
 from apps.authentication.decorators import role_required
 from apps.audit.utils import log_action
 from apps.users.models import User, Role
@@ -141,25 +144,73 @@ def school_credentials(request, pk):
 @login_required
 @role_required(['admin_ecole'])
 def school_settings(request):
-    """Allow the school admin to update their own school's information."""
+    """Allow the school admin to update their own school's information and matricule config."""
     school = request.user.school
     if not school:
         messages.error(request, "Votre compte n'est associé à aucun établissement.")
         return redirect('dashboard:index')
+
+    mat_config, _ = MatriculeConfig.objects.get_or_create(school=school)
+
     if request.method == 'POST':
-        form = SchoolForm(request.POST, request.FILES, instance=school)
-        if form.is_valid():
-            form.save()
-            log_action(request.user, 'UPDATE', f"Paramètres école modifiés: {school.name}", school)
-            messages.success(request, "Paramètres enregistrés avec succès.")
-            return redirect('schools:settings')
+        action = request.POST.get('action', 'school')
+        if action == 'matricule':
+            mat_form = MatriculeConfigForm(request.POST, instance=mat_config)
+            school_form = SchoolSettingsForm(instance=school)
+            if mat_form.is_valid():
+                mat_form.save()
+                log_action(request.user, 'UPDATE', f"Config matricule modifiée: {school.name}", school)
+                messages.success(request, "Configuration des matricules enregistrée.")
+                return redirect('schools:settings')
+        else:
+            school_form = SchoolSettingsForm(request.POST, request.FILES, instance=school)
+            mat_form = MatriculeConfigForm(instance=mat_config)
+            if school_form.is_valid():
+                school_form.save()
+                log_action(request.user, 'UPDATE', f"Paramètres école modifiés: {school.name}", school)
+                messages.success(request, "Paramètres enregistrés avec succès.")
+                return redirect('schools:settings')
     else:
-        form = SchoolForm(instance=school)
+        school_form = SchoolSettingsForm(instance=school)
+        mat_form = MatriculeConfigForm(instance=mat_config)
+
     return render(request, 'schools/settings.html', {
-        'form': form,
+        'form': school_form,
+        'mat_form': mat_form,
+        'mat_config': mat_config,
         'school': school,
         'title': "Paramètres de l'établissement",
     })
+
+
+@login_required
+@role_required(['admin_ecole'])
+def matricule_preview(request):
+    """AJAX: return a preview matricule given config params (no DB write)."""
+    prefix = request.GET.get('prefix', '')
+    include_year = request.GET.get('include_year') == 'true'
+    include_initials = request.GET.get('include_initials') == 'true'
+    separator = request.GET.get('separator', '-')
+    try:
+        num_digits = max(2, min(8, int(request.GET.get('num_digits', 4))))
+    except (ValueError, TypeError):
+        num_digits = 4
+
+    school = request.user.school
+    mat_config, _ = MatriculeConfig.objects.get_or_create(school=school)
+
+    # Build a temporary unsaved config for preview
+    tmp = MatriculeConfig(
+        school=school,
+        prefix=prefix,
+        include_year=include_year,
+        include_initials=include_initials,
+        separator=separator,
+        num_digits=num_digits,
+        last_sequence=mat_config.last_sequence,
+    )
+    preview = tmp.preview(first_name='Jean', last_name='Konan')
+    return JsonResponse({'preview': preview})
 
 
 @login_required
