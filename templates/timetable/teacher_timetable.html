@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+.timetable-grid { border-collapse: separate; border-spacing: 2px; }
+.timetable-grid th { background: #f8f9fc; font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; padding:.6rem 1rem; }
+.slot-label { background:#f8f9fc; font-size:.75rem; font-weight:600; color:#6c757d; padding:.6rem .75rem; white-space:nowrap; }
+.break-cell { background: repeating-linear-gradient(45deg,#fef9e7,#fef9e7 8px,#fff9e0 8px,#fff9e0 16px); text-align:center; padding:.5rem; }
+.break-cell span { font-size:.75rem; font-weight:600; color:#856404; text-transform:uppercase; letter-spacing:.08em; }
+.course-cell { background:#fff; border:1px solid #e9ecef; border-radius:6px; margin:2px; padding:.5rem .6rem; min-height:70px; }
+.free-cell { background:#f8f9fc; border-radius:6px; margin:2px; min-height:70px; display:flex; align-items:center; justify-content:center; }
+.subject-dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.course-name { font-size:.82rem; font-weight:600; color:#212529; }
+.course-meta { font-size:.72rem; color:#6c757d; }
+@media print {
+  .btn, .sidebar, .top-navbar, #main-content > .container-fluid > :first-child { display:none!important; }
+  .card { border:none!important; box-shadow:none!important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <h4 class="mb-1 fw-bold">
+      <i class="bi bi-person-badge me-2 text-primary"></i>
+      {% if user == teacher %}Mon emploi du temps{% else %}{{ teacher.get_full_name }}{% endif %}
+    </h4>
+    <div class="text-muted small">
+      {% if school %}{{ school.name }}{% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap no-print">
+    <a href="{% url 'timetable:index' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+    <a href="?print=1" target="_blank" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-printer me-1"></i>Imprimer / PDF
+    </a>
+  </div>
+</div>
+
+{% if grid %}
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="timetable-grid w-100">
+      <thead>
+        <tr>
+          <th style="min-width:110px;">Horaire</th>
+          {% for day_num, day_label in days %}
+          <th class="text-center" style="min-width:120px;">{{ day_label }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in grid %}
+        <tr>
+          <td class="slot-label align-middle">
+            <div>{{ row.slot.time_range }}</div>
+            {% if row.slot.name and row.slot.name != row.slot.time_range %}
+            <div class="text-muted" style="font-size:.68rem;font-weight:400;">{{ row.slot.name }}</div>
+            {% endif %}
+          </td>
+
+          {% if row.slot.is_break %}
+          <td colspan="{{ days|length }}" class="break-cell">
+            <span><i class="bi bi-cup-hot me-1"></i>Pause</span>
+            {% if row.slot.name %}<span class="ms-1 opacity-75">— {{ row.slot.name }}</span>{% endif %}
+          </td>
+          {% else %}
+          {% for cell in row.cells %}
+          <td>
+            {% if cell.entry %}
+            <div class="course-cell">
+              <div class="d-flex align-items-start gap-1 mb-1">
+                <span class="subject-dot mt-1" style="background:{{ cell.entry.subject.color }};"></span>
+                <div class="flex-grow-1">
+                  <div class="course-name">{{ cell.entry.subject.name }}</div>
+                  <div class="course-meta"><i class="bi bi-people me-1"></i>{{ cell.entry.classroom.name }}</div>
+                  {% if cell.entry.room %}
+                  <div class="course-meta"><i class="bi bi-geo me-1"></i>{{ cell.entry.room }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <div class="free-cell">
+              <span class="text-muted" style="font-size:.7rem;">Libre</span>
+            </div>
+            {% endif %}
+          </td>
+          {% endfor %}
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="d-flex flex-wrap gap-4 mt-3 small text-muted">
+  <span><span class="badge bg-primary rounded-pill me-1">●</span>Cours assigné</span>
+  <span><span class="text-muted me-1">—</span>Période libre</span>
+</div>
+
+{% else %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body text-center py-5 text-muted">
+    <i class="bi bi-calendar-x fs-1 d-block mb-3 opacity-25"></i>
+    <h6>Aucun emploi du temps disponible</h6>
+    <p class="small mb-0">Votre emploi du temps sera disponible une fois configuré et publié.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

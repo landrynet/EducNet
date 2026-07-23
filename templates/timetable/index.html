@@ -1,31 +1,131 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-  <h4 class="mb-0 fw-bold">Emplois du temps</h4>
+  <h4 class="mb-0 fw-bold">
+    <i class="bi bi-calendar-week me-2 text-primary"></i>Emplois du temps
+  </h4>
+  {% if can_manage %}
+  <a href="{% url 'timetable:schedule_config' %}" class="btn btn-outline-primary btn-sm">
+    <i class="bi bi-clock me-1"></i>Configurer les horaires
+  </a>
+  {% endif %}
 </div>
 
-{% if entries %}
-<div class="card border-0 shadow-sm">
-  <div class="table-responsive">
-    <table class="table table-bordered align-middle mb-0">
-      <thead class="table-light">
-        <tr><th>Heure</th><th>Lundi</th><th>Mardi</th><th>Mercredi</th><th>Jeudi</th><th>Vendredi</th></tr>
-      </thead>
-      <tbody>
-        <tr><td colspan="6" class="text-center text-muted py-3">Emplois du temps disponibles</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-{% else %}
-<div class="card border-0 shadow-sm">
-  <div class="card-body text-center py-5 text-muted">
-    <i class="bi bi-calendar-week fs-1 d-block mb-3 opacity-25"></i>
-    <h5>Aucun emploi du temps configuré</h5>
-    <p class="small">Les emplois du temps seront disponibles une fois les créneaux horaires et classes définis.</p>
-    <a href="{% url 'academic:index' %}" class="btn btn-outline-primary">Configurer les classes</a>
+{% if can_manage and not has_timeslots %}
+<div class="alert alert-warning d-flex align-items-center gap-3 mb-4">
+  <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+  <div>
+    <strong>Aucun créneau horaire configuré.</strong>
+    Configurez d'abord les horaires et les pauses avant de créer des emplois du temps.
+    <a href="{% url 'timetable:schedule_config' %}" class="alert-link ms-1">Configurer maintenant →</a>
   </div>
 </div>
 {% endif %}
+
+<!-- Classes -->
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-collection me-2 text-success"></i>Emplois du temps par classe
+        </h6>
+      </div>
+
+      {% if classroom_data %}
+      <div class="list-group list-group-flush">
+        {% for item in classroom_data %}
+        <div class="list-group-item border-0 d-flex justify-content-between align-items-center py-3">
+          <div>
+            <div class="fw-semibold">{{ item.classroom.name }}</div>
+            <div class="text-muted small">
+              {{ item.classroom.level }} &bull; {{ item.classroom.academic_year.name }}
+              &bull; <span class="text-info">{{ item.entry_count }} cours</span>
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if item.schedule %}
+            <span class="badge bg-{{ item.schedule.status_badge_class }} rounded-pill">
+              {{ item.schedule.get_status_display }}
+            </span>
+            {% else %}
+            <span class="badge bg-secondary rounded-pill">Brouillon</span>
+            {% endif %}
+            <a href="{% url 'timetable:classroom_timetable' item.classroom.pk %}"
+               class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-grid-3x3-gap me-1"></i>
+              {% if can_manage %}Gérer{% else %}Consulter{% endif %}
+            </a>
+            {% if can_manage %}
+            <a href="{% url 'timetable:print_classroom' item.classroom.pk %}"
+               class="btn btn-sm btn-outline-secondary" target="_blank" title="Imprimer">
+              <i class="bi bi-printer"></i>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-collection fs-1 d-block mb-3 opacity-25"></i>
+        <h6>Aucune classe disponible</h6>
+        <p class="small">Les classes doivent être créées dans la section Organisation académique.</p>
+        <a href="{% url 'academic:index' %}" class="btn btn-outline-primary btn-sm">
+          Voir l'organisation académique
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Teachers (Director view) -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent">
+        <h6 class="fw-semibold mb-0">
+          <i class="bi bi-person-badge me-2 text-info"></i>Enseignants
+        </h6>
+      </div>
+      {% if teachers %}
+      <div class="list-group list-group-flush">
+        {% for teacher in teachers %}
+        <a href="{% url 'timetable:teacher_timetable_by_id' teacher.pk %}"
+           class="list-group-item list-group-item-action border-0 d-flex align-items-center gap-2 py-2">
+          <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+               style="width:32px;height:32px;font-size:.75rem;flex-shrink:0;">
+            {{ teacher.initials }}
+          </div>
+          <div class="flex-grow-1 min-width-0">
+            <div class="fw-medium small text-truncate">{{ teacher.get_full_name }}</div>
+          </div>
+          <i class="bi bi-chevron-right text-muted small"></i>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card-body text-center py-4 text-muted">
+        <i class="bi bi-person-x d-block fs-3 mb-2 opacity-25"></i>
+        <small>Aucun enseignant</small>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if can_manage %}
+    <div class="card border-0 shadow-sm mt-3">
+      <div class="card-body">
+        <h6 class="fw-semibold mb-3"><i class="bi bi-info-circle me-2 text-primary"></i>Guide rapide</h6>
+        <ol class="ps-3 small text-muted mb-0" style="line-height:1.8;">
+          <li>Configurez les <a href="{% url 'timetable:schedule_config' %}">créneaux horaires</a></li>
+          <li>Sélectionnez une classe</li>
+          <li>Cliquez sur un créneau pour ajouter un cours</li>
+          <li>Publiez l'emploi du temps</li>
+        </ol>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

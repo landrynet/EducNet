@@ -1,0 +1,501 @@
+# PROMPT V2.0 — ÉTAPE 2
+
+## MODULE EMPLOI DU TEMPS
+
+L'Étape 1 concernant les **matières, les classes et les enseignants** a été réalisée et validée.
+
+Développer maintenant le **Module Emploi du temps** en utilisant les relations existantes.
+
+⚠️ Ne pas casser les fonctionnalités existantes de la V1.4 ni celles ajoutées lors de l'Étape 1.
+
+⚠️ Ne pas recréer les matières, les classes ou les enseignants si ces éléments existent déjà.
+
+---
+
+## 1. INTÉGRATION DANS LA SIDEBAR
+
+Ajouter le module **Emploi du temps** dans la sidebar uniquement pour les rôles concernés.
+
+### Secrétaire
+
+Accès à la gestion complète :
+
+* Configurer les horaires.
+* Configurer les pauses.
+* Créer les emplois du temps.
+* Modifier les emplois du temps.
+* Supprimer les cours si nécessaire.
+* Publier les emplois du temps.
+
+### Directeur / Préfet
+
+Accès en **lecture seule uniquement** :
+
+* Consulter l'emploi du temps des classes.
+* Consulter l'emploi du temps des enseignants.
+* Consulter l'emploi du temps global de l'école.
+
+⚠️ Le Directeur / Préfet ne doit pas pouvoir :
+
+* Créer.
+* Modifier.
+* Supprimer.
+* Configurer les horaires.
+* Configurer les pauses.
+
+### Enseignant
+
+Accès à :
+
+* Son emploi du temps personnel.
+* Ses matières.
+* Ses classes.
+* Ses horaires.
+* Ses salles.
+* Ses pauses.
+* Ses périodes libres.
+
+L'enseignant doit pouvoir :
+
+* Télécharger son emploi du temps.
+* Télécharger un PDF.
+* Imprimer son emploi du temps.
+
+Les rôles qui n'ont pas besoin du module ne doivent pas voir **Emploi du temps** dans leur sidebar.
+
+Respecter strictement le système de permissions existant.
+
+---
+
+# 2. CONFIGURATION DES HORAIRES
+
+Le Secrétaire doit pouvoir configurer la structure horaire de son école.
+
+Il doit pouvoir définir :
+
+* Les jours de cours.
+* L'heure de début.
+* L'heure de fin.
+* Les créneaux de cours.
+* Les pauses.
+* Plusieurs pauses dans la journée.
+
+Exemple :
+
+| Période | Horaire     | Type           |
+| ------- | ----------- | -------------- |
+| 1       | 08:00–09:00 | Cours          |
+| 2       | 09:00–10:00 | Cours          |
+| —       | 10:00–10:30 | Pause          |
+| 3       | 10:30–11:30 | Cours          |
+| 4       | 11:30–12:30 | Cours          |
+| —       | 12:30–14:00 | Pause déjeuner |
+| 5       | 14:00–15:00 | Cours          |
+
+⚠️ Les pauses doivent être configurables par chaque école.
+
+Ne pas imposer des horaires fixes.
+
+---
+
+# 3. EMPLOI DU TEMPS PAR CLASSE
+
+Chaque classe doit avoir son propre emploi du temps.
+
+Le Secrétaire sélectionne une classe et voit la grille horaire configurée.
+
+Exemple :
+
+| Heure       | Lundi | Mardi | Mercredi | Jeudi | Vendredi |
+| ----------- | ----- | ----- | -------- | ----- | -------- |
+| 08:00–09:00 | Vide  | Vide  | Vide     | Vide  | Vide     |
+| 09:00–10:00 | Vide  | Vide  | Vide     | Vide  | Vide     |
+| 10:00–10:30 | PAUSE | PAUSE | PAUSE    | PAUSE | PAUSE    |
+| 10:30–11:30 | Vide  | Vide  | Vide     | Vide  | Vide     |
+
+Le Secrétaire clique sur une cellule pour ajouter un cours.
+
+---
+
+# 4. AJOUT D'UN COURS
+
+Lorsqu'un créneau est sélectionné, permettre de choisir :
+
+* La matière.
+* L'enseignant.
+* La salle si elle existe.
+
+La classe et l'horaire sont déjà sélectionnés.
+
+Exemple :
+
+```text
+Classe : 6e A
+Jour : Lundi
+Horaire : 08:00–09:00
+Matière : Mathématiques
+Enseignant : M. Kabila
+Salle : Salle 3
+```
+
+Utiliser les relations existantes entre :
+
+```text
+Classe
+    ↓
+Matière
+    ↓
+Enseignant
+```
+
+Ne pas afficher des données qui ne correspondent pas à la classe ou à l'enseignant.
+
+---
+
+# 5. DÉTECTION DES CONFLITS
+
+Le système doit vérifier automatiquement les conflits.
+
+### Conflit d'enseignant
+
+Un enseignant ne peut pas être affecté à deux classes au même moment.
+
+### Conflit de classe
+
+Une classe ne peut pas avoir deux cours au même moment.
+
+### Conflit de salle
+
+Une salle ne peut pas être utilisée par deux classes au même moment.
+
+En cas de conflit :
+
+* Afficher un message clair.
+* Empêcher l'enregistrement du conflit.
+
+---
+
+# 6. EMPLOI DU TEMPS DE L'ENSEIGNANT
+
+L'enseignant doit accéder à son emploi du temps depuis son dashboard actuel.
+
+Exemple :
+
+| Heure       | Lundi                 | Mardi                 | Mercredi              |
+| ----------- | --------------------- | --------------------- | --------------------- |
+| 08:00–09:00 | Mathématiques<br>6e A | Français<br>5e B      | Libre                 |
+| 09:00–10:00 | Mathématiques<br>5e A | Libre                 | Mathématiques<br>6e B |
+| 10:00–10:30 | PAUSE                 | PAUSE                 | PAUSE                 |
+| 10:30–11:30 | Libre                 | Mathématiques<br>6e A | Français<br>5e A      |
+
+L'enseignant doit voir :
+
+* La matière.
+* La classe.
+* L'heure.
+* La salle.
+* Les pauses.
+* Les périodes libres.
+
+Prévoir les boutons :
+
+```text
+[Télécharger PDF]
+[Imprimer]
+```
+
+---
+
+# 7. EMPLOI DU TEMPS DU DIRECTEUR / PRÉFET
+
+Le Directeur / Préfet doit avoir un accès strictement en lecture seule.
+
+Il peut consulter :
+
+* L'emploi du temps de chaque classe.
+* L'emploi du temps de chaque enseignant.
+* L'emploi du temps global de l'école.
+
+⚠️ Aucun bouton de création, modification ou suppression ne doit être disponible pour ce rôle.
+
+---
+
+# 8. STATUT DE L'EMPLOI DU TEMPS
+
+Prévoir les statuts :
+
+```text
+Brouillon
+    ↓
+En préparation
+    ↓
+Publié
+```
+
+Le Secrétaire peut préparer et publier l'emploi du temps.
+
+Une fois publié, il devient visible aux utilisateurs autorisés.
+
+---
+
+# 9. DESIGN ET RESPONSIVE
+
+Le design doit être adapté au design général de l'application.
+
+Le module doit être :
+
+* Moderne.
+* Clair.
+* Cohérent avec l'application.
+* Responsive.
+
+Il doit fonctionner sur :
+
+* Ordinateur.
+* Tablette.
+* Téléphone.
+
+La grille doit rester lisible sur les petits écrans.
+
+Prévoir une interface claire pour :
+
+* Sélection de classe.
+* Sélection d'enseignant.
+* Consultation.
+* Filtres.
+* Gestion des cours.
+* Téléchargement PDF.
+
+Adapter le design au système UI existant et au design général de l'application.
+
+---
+
+# 10. ISOLATION MULTI-SITE
+
+Une école ne doit jamais voir les emplois du temps d'une autre école.
+
+Respecter strictement :
+
+```text
+École
+    ↓
+Classes de l'école
+    ↓
+Matières de l'école
+    ↓
+Enseignants de l'école
+    ↓
+Emplois du temps de l'école
+```
+
+Toutes les requêtes, recherches, filtres et affichages doivent respecter l'école de l'utilisateur connecté.
+
+Vérifier qu'un utilisateur d'une école ne peut pas accéder directement à l'emploi du temps d'une autre école en modifiant une URL ou un identifiant.
+
+---
+
+# 11. DONNÉES DE TEST — UTILISER LE SCRIPT EXISTANT
+
+Ajouter les nouvelles données de test **dans le même script de données de test déjà utilisé et mis à jour lors de l'Étape 1**.
+
+⚠️ Ne pas créer un nouveau script séparé.
+
+Le script doit rester unique et centralisé pour les données de test du système.
+
+Utiliser les données déjà créées lors de l'Étape 1 :
+
+```text
+École
+    ↓
+Classes existantes
+    ↓
+Matières existantes
+    ↓
+Enseignants existants
+    ↓
+Relations existantes
+    ↓
+Horaires
+    ↓
+Pauses
+    ↓
+Emplois du temps
+```
+
+Ajouter les données nécessaires au module Emploi du temps :
+
+* Plusieurs horaires.
+* Plusieurs pauses.
+* Plusieurs cours.
+* Des emplois du temps pour plusieurs classes.
+* Des emplois du temps pour plusieurs enseignants.
+* Des salles si elles existent déjà dans le système.
+
+Les données doivent être cohérentes avec les relations existantes.
+
+Exemple :
+
+```text
+École ABC
+    ↓
+6e A
+    ├── Mathématiques → M. Kabila
+    ├── Français → Mme Marie
+    └── Sciences → M. Jean
+```
+
+Puis créer les emplois du temps correspondants.
+
+Le script doit :
+
+* Utiliser les écoles, classes, matières et enseignants déjà créés.
+* Ne pas recréer de doublons.
+* Vérifier si les données existent avant de les créer.
+* Ajouter uniquement les données manquantes.
+* Préserver les données existantes.
+* Être réexécutable.
+* Rester facilement extensible.
+
+Les données doivent permettre de tester :
+
+* L'emploi du temps d'une classe.
+* L'emploi du temps d'un enseignant.
+* Les pauses.
+* Les périodes libres.
+* Plusieurs matières.
+* Plusieurs classes.
+* Plusieurs enseignants.
+* Les conflits d'enseignants.
+* Les conflits de classes.
+* Les conflits de salles.
+* Le téléchargement PDF.
+* L'impression.
+
+⚠️ Le script de données de test doit rester unique et centralisé.
+
+Continuer à l'enrichir progressivement à chaque nouvelle phase du projet, comme cela a été fait lors de l'Étape 1.
+
+Après le développement, exécuter le script de données de test et vérifier que les nouvelles données de l'Emploi du temps sont correctement ajoutées aux données créées lors de l'Étape 1, sans doublons ni régression.
+
+---
+
+# 12. PRÉPARATION DU FUTUR PORTAIL ÉLÈVE
+
+Ne pas développer le Portail Élève maintenant.
+
+Mais conserver la relation :
+
+```text
+Élève
+    ↓
+Classe
+    ↓
+Emploi du temps de la classe
+```
+
+Le futur Portail Élève devra pouvoir récupérer automatiquement l'emploi du temps de la classe de l'élève.
+
+---
+
+# 13. PRÉPARATION DU FUTUR PORTAIL PARENT
+
+Ne pas développer le Portail Parent maintenant.
+
+Préparer la structure :
+
+```text
+Parent
+    ↓
+Élève associé
+    ↓
+Classe de l'élève
+    ↓
+Emploi du temps
+```
+
+---
+
+# 14. TESTS OBLIGATOIRES
+
+Tester :
+
+* Configuration des horaires.
+* Configuration des pauses.
+* Création d'un emploi du temps.
+* Modification d'un cours.
+* Suppression d'un cours.
+* Conflit d'enseignant.
+* Conflit de classe.
+* Conflit de salle.
+* Accès du Secrétaire.
+* Accès en lecture seule du Directeur / Préfet.
+* Consultation par l'Enseignant.
+* Téléchargement PDF.
+* Impression.
+* Isolation entre les écoles.
+* Protection des URLs.
+* Responsive design.
+* Script de données de test.
+* Absence de doublons lors de la réexécution du script.
+
+---
+
+# OBJECTIF FINAL
+
+Le fonctionnement doit être :
+
+```text
+SECRÉTAIRE
+    ↓
+Configure les horaires et les pauses
+    ↓
+Sélectionne une classe
+    ↓
+Crée manuellement les cours
+    ↓
+Sélectionne la matière
+    ↓
+Sélectionne l'enseignant
+    ↓
+Sélectionne la salle
+    ↓
+Le système vérifie les conflits
+    ↓
+Emploi du temps publié
+```
+
+Puis :
+
+```text
+DIRECTEUR / PRÉFET
+→ Consultation uniquement
+```
+
+```text
+ENSEIGNANT
+→ Consultation de son emploi du temps
+→ Téléchargement PDF
+→ Impression
+```
+
+La structure doit être prête pour les futurs :
+
+```text
+ÉLÈVES
+→ Emploi du temps de leur classe
+```
+
+```text
+PARENTS
+→ Emploi du temps de leurs enfants
+```
+
+⚠️ **Ne pas développer de génération automatique complète de l'emploi du temps.**
+
+La création des cours reste **manuelle par le Secrétaire**.
+
+⚠️ **Ne pas casser les fonctionnalités existantes de la V1.4 ni celles de l'Étape 1.**
+
+⚠️ **Avant de terminer, vérifier les permissions, l'isolation Multi-Site, les relations entre classes, matières et enseignants, le script unique de données de test et la stabilité générale du système.**
+
+⚠️ **Après l'implémentation, exécuter les tests et le script de données de test afin de confirmer que l'ensemble fonctionne correctement sans régression.**

@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+.timetable-grid { border-collapse: separate; border-spacing: 2px; }
+.timetable-grid th { background: #f8f9fc; font-size:.8rem; text-transform:uppercase; letter-spacing:.05em; padding:.6rem 1rem; }
+.timetable-grid td { min-width: 120px; vertical-align: top; padding: 0; }
+.slot-label { background:#f8f9fc; font-size:.75rem; font-weight:600; color:#6c757d; padding:.6rem .75rem; white-space:nowrap; }
+.break-cell { background: repeating-linear-gradient(45deg,#fef9e7,#fef9e7 8px,#fff9e0 8px,#fff9e0 16px); text-align:center; padding:.5rem; }
+.break-cell span { font-size:.75rem; font-weight:600; color:#856404; text-transform:uppercase; letter-spacing:.08em; }
+.course-cell { background:#fff; border:1px solid #e9ecef; border-radius:6px; margin:2px; padding:.5rem .6rem; min-height:70px; }
+.empty-cell { background:#f8f9fc; border:2px dashed #dee2e6; border-radius:6px; margin:2px; min-height:70px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s; }
+.empty-cell:hover { background:#e8f4fd; border-color:#0d6efd; }
+.empty-cell .add-icon { color:#adb5bd; font-size:1.4rem; transition:color .15s; }
+.empty-cell:hover .add-icon { color:#0d6efd; }
+.subject-dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.course-name { font-size:.82rem; font-weight:600; color:#212529; }
+.course-meta { font-size:.72rem; color:#6c757d; }
+.cell-actions { display:none; gap:3px; }
+.course-cell:hover .cell-actions { display:flex; }
+@media (max-width: 768px) {
+  .timetable-grid td { min-width: 90px; }
+  .course-name { font-size:.75rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+  <div>
+    <h4 class="mb-1 fw-bold">
+      <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>{{ classroom.name }}
+    </h4>
+    <div class="text-muted small">
+      {{ classroom.level }} &bull; {{ classroom.academic_year.name }}
+      {% if schedule %}
+      &bull; <span class="badge bg-{{ schedule.status_badge_class }} rounded-pill">{{ schedule.get_status_display }}</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'timetable:index' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Retour
+    </a>
+    <a href="{% url 'timetable:print_classroom' classroom.pk %}" target="_blank"
+       class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-printer me-1"></i>Imprimer
+    </a>
+    {% if can_manage and schedule %}
+    <div class="dropdown">
+      <button class="btn btn-outline-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="bi bi-arrow-up-circle me-1"></i>Statut
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li>
+          <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="draft">
+            <button class="dropdown-item {% if schedule.status == 'draft' %}active{% endif %}">
+              <i class="bi bi-circle me-2"></i>Brouillon
+            </button>
+          </form>
+        </li>
+        <li>
+          <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="preparing">
+            <button class="dropdown-item {% if schedule.status == 'preparing' %}active{% endif %}">
+              <i class="bi bi-pencil-square me-2"></i>En préparation
+            </button>
+          </form>
+        </li>
+        <li>
+          <form method="post" action="{% url 'timetable:schedule_publish' classroom.pk %}">
+            {% csrf_token %}<input type="hidden" name="action" value="publish">
+            <button class="dropdown-item {% if schedule.status == 'published' %}active{% endif %}">
+              <i class="bi bi-check-circle me-2"></i>Publier
+            </button>
+          </form>
+        </li>
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Timetable grid -->
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="timetable-grid w-100">
+      <thead>
+        <tr>
+          <th style="min-width:110px;">Horaire</th>
+          {% for day_num, day_label in days %}
+          <th class="text-center">{{ day_label }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in grid %}
+        <tr>
+          <!-- Timeslot label -->
+          <td class="slot-label align-middle">
+            <div>{{ row.slot.time_range }}</div>
+            {% if row.slot.name and row.slot.name != row.slot.time_range %}
+            <div class="text-muted" style="font-size:.68rem;font-weight:400;">{{ row.slot.name }}</div>
+            {% endif %}
+          </td>
+
+          {% if row.slot.is_break %}
+          <!-- Break: spans all day columns -->
+          <td colspan="{{ days|length }}" class="break-cell">
+            <span><i class="bi bi-cup-hot me-1"></i>Pause</span>
+            {% if row.slot.name %}<span class="ms-1 opacity-75">— {{ row.slot.name }}</span>{% endif %}
+          </td>
+          {% else %}
+          <!-- Course cells -->
+          {% for cell in row.cells %}
+          <td>
+            {% if cell.entry %}
+            <!-- Filled cell -->
+            <div class="course-cell position-relative">
+              <div class="d-flex align-items-start gap-1 mb-1">
+                <span class="subject-dot mt-1" style="background:{{ cell.entry.subject.color }};"></span>
+                <div class="flex-grow-1">
+                  <div class="course-name">{{ cell.entry.subject.name }}</div>
+                  {% if cell.entry.teacher %}
+                  <div class="course-meta"><i class="bi bi-person me-1"></i>{{ cell.entry.teacher.get_full_name }}</div>
+                  {% endif %}
+                  {% if cell.entry.room %}
+                  <div class="course-meta"><i class="bi bi-geo me-1"></i>{{ cell.entry.room }}</div>
+                  {% endif %}
+                </div>
+              </div>
+              {% if can_manage %}
+              <div class="cell-actions position-absolute top-0 end-0 p-1">
+                <button class="btn btn-xs btn-outline-primary p-0 px-1"
+                        style="font-size:.7rem;"
+                        onclick="openEditModal({{ cell.entry.pk }}, '{{ cell.entry.subject_id }}', '{{ cell.entry.teacher_id|default:'' }}', '{{ cell.entry.room|escapejs }}')"
+                        title="Modifier">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <form method="post" action="{% url 'timetable:entry_delete' cell.entry.pk %}"
+                      class="d-inline"
+                      onsubmit="return confirm('Supprimer ce cours ?')">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-xs btn-outline-danger p-0 px-1"
+                          style="font-size:.7rem;" title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+              {% endif %}
+            </div>
+
+            {% elif can_manage %}
+            <!-- Empty cell — clickable for Secretary -->
+            <div class="empty-cell"
+                 onclick="openAddModal({{ cell.day }}, '{{ row.slot.pk }}')"
+                 title="Ajouter un cours — {{ cell.day_label }} {{ row.slot.time_range }}">
+              <i class="bi bi-plus-circle add-icon"></i>
+            </div>
+            {% else %}
+            <!-- Empty cell — read-only for Director -->
+            <div class="d-flex align-items-center justify-content-center py-4 text-muted" style="min-height:70px;">
+              <span style="font-size:.7rem;">—</span>
+            </div>
+            {% endif %}
+          </td>
+          {% endfor %}
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="d-flex flex-wrap gap-3 mt-3 small text-muted">
+  <span><i class="bi bi-circle-fill text-primary me-1" style="font-size:.5rem;"></i>Cours assigné</span>
+  {% if can_manage %}
+  <span><i class="bi bi-plus-circle me-1 text-muted"></i>Cliquer pour ajouter un cours</span>
+  {% endif %}
+</div>
+
+
+{% if can_manage %}
+<!-- ── Add Course Modal ─────────────────────────────── -->
+<div class="modal fade" id="addModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-semibold">
+          <i class="bi bi-plus-circle me-2 text-primary"></i>Ajouter un cours
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="addForm" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <!-- Context info -->
+          <div class="alert alert-light border py-2 mb-3 small">
+            <strong>Classe :</strong> {{ classroom.name }} &nbsp;|&nbsp;
+            <strong>Jour :</strong> <span id="addDayLabel">—</span> &nbsp;|&nbsp;
+            <strong>Horaire :</strong> <span id="addSlotLabel">—</span>
+          </div>
+
+          <input type="hidden" name="day" id="addDay">
+          <input type="hidden" name="timeslot_id" id="addTimeslotId">
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Matière <span class="text-danger">*</span></label>
+            <select name="subject" class="form-select" id="addSubject" required>
+              <option value="">— Choisir une matière —</option>
+              {% for s in subjects %}
+              <option value="{{ s.pk }}" data-color="{{ s.color }}">{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Enseignant</label>
+            <select name="teacher" class="form-select" id="addTeacher">
+              <option value="">— Aucun —</option>
+              {% for t in teachers %}
+              <option value="{{ t.pk }}">{{ t.get_full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Salle</label>
+            <input type="text" name="room" class="form-control" id="addRoom"
+                   placeholder="Ex: Salle 3 (optionnel)">
+          </div>
+
+          <div id="addConflictAlert" class="alert alert-danger py-2 small d-none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="addSubmitBtn">
+            <i class="bi bi-check me-1"></i>Ajouter
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Course Modal ────────────────────────────── -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-semibold">
+          <i class="bi bi-pencil me-2 text-warning"></i>Modifier le cours
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="editForm" method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-medium">Matière <span class="text-danger">*</span></label>
+            <select name="subject" class="form-select" id="editSubject" required>
+              <option value="">— Choisir —</option>
+              {% for s in subjects %}
+              <option value="{{ s.pk }}">{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Enseignant</label>
+            <select name="teacher" class="form-select" id="editTeacher">
+              <option value="">— Aucun —</option>
+              {% for t in teachers %}
+              <option value="{{ t.pk }}">{{ t.get_full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Salle</label>
+            <input type="text" name="room" class="form-control" id="editRoom"
+                   placeholder="Ex: Salle 3 (optionnel)">
+          </div>
+
+          <div id="editConflictAlert" class="alert alert-danger py-2 small d-none"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-warning" id="editSubmitBtn">
+            <i class="bi bi-check me-1"></i>Modifier
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const DAY_LABELS = { {% for day_num, day_label in days %}'{{ day_num }}': '{{ day_label }}',{% endfor %} };
+const SLOT_TIMES = {};
+{% for row in grid %}SLOT_TIMES['{{ row.slot.pk }}'] = '{{ row.slot.time_range }}';{% endfor %}
+
+const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+
+function openAddModal(day, slotId) {
+  document.getElementById('addDay').value = day;
+  document.getElementById('addTimeslotId').value = slotId;
+  document.getElementById('addDayLabel').textContent = DAY_LABELS[day] || day;
+  document.getElementById('addSlotLabel').textContent = SLOT_TIMES[slotId] || slotId;
+  document.getElementById('addSubject').value = '';
+  document.getElementById('addTeacher').value = '';
+  document.getElementById('addRoom').value = '';
+  document.getElementById('addConflictAlert').classList.add('d-none');
+  document.getElementById('addForm').action = "{% url 'timetable:entry_add' classroom.pk %}";
+  addModal.show();
+}
+
+function openEditModal(entryPk, subjectId, teacherId, room) {
+  document.getElementById('editSubject').value = subjectId;
+  document.getElementById('editTeacher').value = teacherId || '';
+  document.getElementById('editRoom').value = room;
+  document.getElementById('editConflictAlert').classList.add('d-none');
+  document.getElementById('editForm').action = `/timetable/entry/${entryPk}/edit/`;
+  editModal.show();
+}
+
+// AJAX form submission
+function submitForm(formId, alertId, modal) {
+  const form = document.getElementById(formId);
+  const alert = document.getElementById(alertId);
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert.classList.add('d-none');
+    const data = new FormData(form);
+    fetch(form.action, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: data,
+    })
+    .then(r => r.json().then(j => ({ ok: r.ok, data: j })))
+    .then(({ ok, data }) => {
+      if (ok && data.ok) {
+        modal.hide();
+        window.location.reload();
+      } else {
+        const errors = data.errors || ['Une erreur est survenue.'];
+        alert.innerHTML = '<strong>Conflit détecté :</strong><ul class="mb-0 ps-3">' +
+          errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+        alert.classList.remove('d-none');
+      }
+    })
+    .catch(() => {
+      alert.textContent = 'Erreur de communication avec le serveur.';
+      alert.classList.remove('d-none');
+    });
+  });
+}
+
+submitForm('addForm', 'addConflictAlert', addModal);
+submitForm('editForm', 'editConflictAlert', editModal);
+</script>
+{% endif %}
+{% endblock %}

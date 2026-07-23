@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="mb-0 fw-bold">{{ title }}</h4>
+      <a href="{% url 'timetable:schedule_config' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Retour
+      </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Type <span class="text-danger">*</span></label>
+            {{ form.slot_type }}
+            {% if form.slot_type.errors %}<div class="text-danger small mt-1">{{ form.slot_type.errors.0 }}</div>{% endif %}
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-medium">Heure de début <span class="text-danger">*</span></label>
+              {{ form.start_time }}
+              {% if form.start_time.errors %}<div class="text-danger small mt-1">{{ form.start_time.errors.0 }}</div>{% endif %}
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-medium">Heure de fin <span class="text-danger">*</span></label>
+              {{ form.end_time }}
+              {% if form.end_time.errors %}<div class="text-danger small mt-1">{{ form.end_time.errors.0 }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Nom (optionnel)</label>
+            {{ form.name }}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Ordre d'affichage</label>
+            {{ form.order }}
+          </div>
+
+          {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 small">{{ form.non_field_errors.0 }}</div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-4">
+            <a href="{% url 'timetable:schedule_config' %}" class="btn btn-outline-secondary">Annuler</a>
+            <button type="submit" class="btn btn-primary flex-grow-1">
+              <i class="bi bi-check me-1"></i>Enregistrer
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

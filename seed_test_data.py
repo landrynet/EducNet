@@ -294,6 +294,123 @@ def create_staff_profiles(school, teachers, subjects):
         log(f"  Could not create staff profiles: {e}", 'WARN')
 
 
+def create_timetable_data(school):
+    """Create timeslots, schedules, and course entries for a school."""
+    try:
+        from apps.timetable.models import TimeSlot, TimetableSchedule, TimetableEntry
+        from apps.academic.models import Classroom, Subject
+        from apps.users.models import User, Role
+
+        # ── Time slots ──────────────────────────────────────────────────────
+        slots_config = [
+            ('Cours 1',       '08:00', '09:00', 'course', 0),
+            ('Cours 2',       '09:00', '10:00', 'course', 1),
+            ('Pause',         '10:00', '10:30', 'break',  2),
+            ('Cours 3',       '10:30', '11:30', 'course', 3),
+            ('Cours 4',       '11:30', '12:30', 'course', 4),
+            ('Pause déjeuner','12:30', '14:00', 'break',  5),
+            ('Cours 5',       '14:00', '15:00', 'course', 6),
+            ('Cours 6',       '15:00', '16:00', 'course', 7),
+        ]
+
+        slots = {}
+        for name, start, end, slot_type, order in slots_config:
+            from datetime import time
+            sh, sm = int(start.split(':')[0]), int(start.split(':')[1])
+            eh, em = int(end.split(':')[0]), int(end.split(':')[1])
+            slot, created = TimeSlot.objects.get_or_create(
+                school=school,
+                start_time=time(sh, sm),
+                end_time=time(eh, em),
+                defaults={'name': name, 'slot_type': slot_type, 'order': order}
+            )
+            if created:
+                log(f"  Timeslot created: {slot.time_range} ({slot_type})", 'OK')
+            slots[name] = slot
+
+        # ── Classrooms & teachers ─────────────────────────────────────────
+        classrooms = list(Classroom.objects.filter(school=school).prefetch_related('subjects'))
+        teachers = list(User.objects.filter(school=school, role=Role.ENSEIGNANT, is_active=True))
+
+        if not classrooms or not teachers:
+            log("  No classrooms or teachers — skipping timetable entries", 'WARN')
+            return
+
+        # Subject lookup
+        all_subjects = {s.pk: s for s in Subject.objects.filter(school=school)}
+
+        # Build course slots only (exclude breaks)
+        course_slots = [s for s in slots.values() if s.slot_type == 'course']
+
+        # Days Mon=0 to Fri=4
+        days = [0, 1, 2, 3, 4]
+
+        # ── Entries: one classroom, a few entries ──────────────────────────
+        entries_created = 0
+        conflicts_skipped = 0
+
+        for cls_idx, classroom in enumerate(classrooms[:3]):  # seed first 3 classrooms
+            cls_subjects = list(classroom.subjects.filter(school=school))
+            if not cls_subjects:
+                continue
+
+            # Create/get schedule for this classroom
+            schedule, _ = TimetableSchedule.objects.get_or_create(
+                school=school,
+                classroom=classroom,
+                defaults={'status': 'published'}
+            )
+
+            # Assign courses: cycle through subjects and days
+            for day_idx, day in enumerate(days):
+                for slot_idx, slot in enumerate(course_slots[:4]):  # 4 course slots per day
+                    subject = cls_subjects[(day_idx * len(course_slots) + slot_idx) % len(cls_subjects)]
+                    # Rotate teachers: each teacher teaches different slots
+                    teacher = teachers[(cls_idx + day_idx + slot_idx) % len(teachers)]
+
+                    # Skip if slot already occupied
+                    if TimetableEntry.objects.filter(classroom=classroom, day=day, timeslot=slot).exists():
+                        continue
+
+                    # Skip if teacher conflict (teacher already teaching another class at same time)
+                    if TimetableEntry.objects.filter(school=school, teacher=teacher, day=day, timeslot=slot).exclude(classroom=classroom).exists():
+                        # Try next teacher
+                        for alt_teacher in teachers:
+                            if not TimetableEntry.objects.filter(school=school, teacher=alt_teacher, day=day, timeslot=slot).exists():
+                                teacher = alt_teacher
+                                break
+                        else:
+                            conflicts_skipped += 1
+                            continue
+
+                    # Assign room
+                    room_num = (cls_idx + slot_idx) % 5 + 1
+                    room = f"Salle {room_num}"
+
+                    # Check room conflict
+                    if TimetableEntry.objects.filter(school=school, room__iexact=room, day=day, timeslot=slot).exclude(classroom=classroom).exists():
+                        room = f"Salle {room_num + 5}"
+
+                    TimetableEntry.objects.create(
+                        school=school,
+                        classroom=classroom,
+                        subject=subject,
+                        teacher=teacher,
+                        day=day,
+                        timeslot=slot,
+                        room=room,
+                    )
+                    entries_created += 1
+
+        if entries_created:
+            log(f"  {entries_created} course entries created", 'OK')
+        if conflicts_skipped:
+            log(f"  {conflicts_skipped} slots skipped (conflicts)", 'WARN')
+
+    except Exception as e:
+        log(f"  Could not create timetable data: {e}", 'WARN')
+
+
 def create_finance_data(school, students):
     """Create sample payment records."""
     try:
@@ -398,7 +515,7 @@ def seed(reset=False):
         create_staff_profiles(school, all_teachers.get(school.pk, []), subjects)
 
     # ── Finance ──────────────────────────────────────
-    log("\n[5/5] Finance records...")
+    log("\n[5/6] Finance records...")
     for school in school_objects:
         log(f"\n  → {school.name}:")
         try:
@@ -407,6 +524,12 @@ def seed(reset=False):
             create_finance_data(school, students)
         except Exception as e:
             log(f"  {e}", 'WARN')
+
+    # ── Timetable ─────────────────────────────────────
+    log("\n[6/6] Timetable data...")
+    for school in school_objects:
+        log(f"\n  → {school.name}:")
+        create_timetable_data(school)
 
     # ── Summary ──────────────────────────────────────
     log("\n═══════════════════════════════════════════════")
